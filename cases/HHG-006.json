@@ -1,0 +1,203 @@
+{
+  "case_id": "HHG-006",
+  "case": {
+    "status": "closed_fraud",
+    "verdict": "fraud",
+    "fraud_probability": 0.9,
+    "pattern": "card_not_present_new_device",
+    "pattern_description": "",
+    "affected_txn_ids": [
+      "3476682"
+    ],
+    "first_suspicious_txn_id": "3476682",
+    "connected_card_ids": [
+      "22282",
+      "19248",
+      "17503",
+      "12548",
+      "19507",
+      "13947",
+      "15048",
+      "19468",
+      "16535",
+      "21363"
+    ],
+    "connected_device_profiles": [
+      "Trident/7.0 | desktop | Windows 7 | ie 11.0 for desktop"
+    ],
+    "exposure_usd": 482.12,
+    "evidence": [
+      {
+        "claim": "Customer explicitly disputed this transaction, stating they did not make it.",
+        "source": "customer",
+        "ref": "trigger:customer_report",
+        "entity_ids": [
+          "3476682"
+        ]
+      },
+      {
+        "claim": "Device marked as 'New' for this account (id_15=New), consistent with a new or stolen device being used.",
+        "source": "graph",
+        "ref": "query:identity.id_15",
+        "entity_ids": [
+          "3476682"
+        ]
+      },
+      {
+        "claim": "Device profile shared with 30 other cards from different customers — possible fraud ring.",
+        "source": "graph",
+        "ref": "query:device_neighbors",
+        "entity_ids": [
+          "15048",
+          "16535",
+          "12548",
+          "21363",
+          "19468"
+        ]
+      },
+      {
+        "claim": "This device profile appears in 20 closed fraud cases: ['CC-0570', 'CC-0779', 'CC-1017'].",
+        "source": "graph",
+        "ref": "query:cases_by_device",
+        "entity_ids": [
+          "CC-0570",
+          "CC-0779",
+          "CC-1017"
+        ]
+      },
+      {
+        "claim": "Transaction amount $482.12 is 4.1x the customer's average ($118.56).",
+        "source": "graph",
+        "ref": "query:account_behavior_profile",
+        "entity_ids": [
+          "3476682"
+        ]
+      },
+      {
+        "claim": "Flagged and three preceding transactions are online purchases executed within 30 minutes using a device never before seen for this cardholder.",
+        "source": "graph",
+        "ref": "TRANSACTION WINDOW",
+        "entity_ids": [
+          "3476682"
+        ]
+      },
+      {
+        "claim": "Device status id_15='New' meets criteria for card_not_present_new_device pattern.",
+        "source": "graph",
+        "ref": "FLAGGED TRANSACTION",
+        "entity_ids": [
+          "3476682"
+        ]
+      },
+      {
+        "claim": "Same device is linked to 30 other cards, several with confirmed fraud cases, indicating a compromised device cluster.",
+        "source": "graph",
+        "ref": "DEVICE SHARED WITH OTHER CARDS",
+        "entity_ids": [
+          "15048",
+          "16535",
+          "12548",
+          "21363",
+          "19468"
+        ]
+      },
+      {
+        "claim": "Case was triggered by customer_report, suggesting the cardholder did not recognize at least one of the transactions.",
+        "source": "customer",
+        "ref": "trigger",
+        "entity_ids": [
+          "C07297"
+        ]
+      },
+      {
+        "claim": "Transaction amounts ($456–$488) are well above cardholder’s $118 average and were attempted in rapid succession, typical of fraudulent card-not-present bursts.",
+        "source": "graph",
+        "ref": "CUSTOMER PROFILE / TRANSACTION WINDOW",
+        "entity_ids": [
+          "3476682"
+        ]
+      }
+    ],
+    "similar_prior_cases": [],
+    "summary": "A burst of four high-value online transactions originating from a device classified as 'New' points to a card-not-present compromise. The same device is linked to dozens of other cards with confirmed fraud, greatly elevating risk. The customer itself reported the activity, and the spending pattern is inconsistent with historical behavior. Taken together, there is a strong likelihood that card C07297-K1 has been compromised in a broader device-based fraud ring.",
+    "written_to_graph": true,
+    "graph_case_id": "HHG-006"
+  },
+  "evidence_requests": [],
+  "next_best_actions": {
+    "initial": [
+      {
+        "action": "BLOCK_CARD",
+        "route": "L1",
+        "reason": "R2: customer disputed, fraud probability high"
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "R2: customer dispute warrants a case"
+      },
+      {
+        "action": "FILE_REPORT",
+        "route": "L2",
+        "reason": "R6: shared device with confirmed-fraud history"
+      },
+      {
+        "action": "MONITOR_CONNECTED_CARDS",
+        "route": "auto",
+        "reason": "R6: device shared with 30 cards — monitor all"
+      }
+    ],
+    "final": [
+      {
+        "action": "BLOCK_CARD",
+        "route": "L1",
+        "reason": "R2/R5: fraud probability 0.90 — block card"
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "R3a"
+      },
+      {
+        "action": "FILE_REPORT",
+        "route": "L2",
+        "reason": "Confirmed fraud with exposure $482.12"
+      },
+      {
+        "action": "MONITOR_CONNECTED_CARDS",
+        "route": "auto",
+        "reason": "R6"
+      }
+    ],
+    "what_changed": "No change from initial actions. Shared device evidence was present from investigation start; MONITOR_CONNECTED_CARDS and FILE_REPORT were included in initial actions per R6."
+  },
+  "sar": {
+    "file": true,
+    "reason": "R2/R6: fraud confirmed or strongly suspected with exposure $482.12. Shared device links to additional compromised cards. Policy threshold for regulatory filing met.",
+    "narrative": "In the case identified as HHG-006, suspicious activity was detected involving a transaction of $482.12, significantly higher than the account holder's average spending of $118.56. The account holder explicitly disputed this transaction, asserting they did not authorize it. This transaction was executed using a device identified as 'New' to the account, suggesting potential use of a new or stolen device. Notably, this particular device profile has been associated with 20 previous fraud cases, including cases labeled 'CC-0570', 'CC-0779', and 'CC-1017,' indicating a pattern of fraudulent activity.\n\nThe suspect transaction is part of a series of four online purchases completed within a 30-minute window, all of which were made using a device previously unseen by this account. This scenario matches the pattern for card-not-present incidents associated with a new device, raising suspicions of deliberate manipulation. Further investigation reveals the same device profile is linked to 30 different cards, many connected to confirmed fraud cases, suggesting its involvement in a sophisticated fraud ring.\n\nThe coincidence of multiple high-value, rapid transactions deviating from the customer's typical spending behavior, combined with the customer's own report of unauthorized activity, strengthens the suspicion of a compromised card. All indicators point to card C07297-K1 being caught in a broader device-based fraud operation.",
+    "subjects": [
+      "device:Trident/7.0",
+      "22282",
+      "17503",
+      "19248",
+      "12548",
+      "19507",
+      "13947",
+      "15048",
+      "19468",
+      "16535",
+      "C07297-K1",
+      "C07297",
+      "21363"
+    ],
+    "total_amount_usd": 482.12,
+    "activity_dates": [
+      "2016-11-12",
+      "2016-11-21"
+    ]
+  },
+  "stop_reason": "Fraud probability >= 0.85 with 2+ independent evidence pieces",
+  "tool_calls": 12,
+  "tokens": 3641,
+  "latency_s": 14.1
+}

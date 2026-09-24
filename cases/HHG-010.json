@@ -1,0 +1,220 @@
+{
+  "case_id": "HHG-010",
+  "case": {
+    "status": "closed_fraud",
+    "verdict": "fraud",
+    "fraud_probability": 0.95,
+    "pattern": "card_not_present_new_device",
+    "pattern_description": "",
+    "affected_txn_ids": [
+      "3506725"
+    ],
+    "first_suspicious_txn_id": "3506725",
+    "connected_card_ids": [
+      "12925",
+      "14670",
+      "17503",
+      "22830",
+      "11486",
+      "15876",
+      "10546",
+      "17736",
+      "22900"
+    ],
+    "connected_device_profiles": [
+      "Windows | desktop | Windows 10 | edge 16.0"
+    ],
+    "exposure_usd": 1000.03,
+    "evidence": [
+      {
+        "claim": "Bank model risk score: 0.90. This is a signal for review, not a verdict.",
+        "source": "graph",
+        "ref": "field:risk_score",
+        "entity_ids": [
+          "3506725"
+        ]
+      },
+      {
+        "claim": "Device marked as 'New' for this account (id_15=New), consistent with a new or stolen device being used.",
+        "source": "graph",
+        "ref": "query:identity.id_15",
+        "entity_ids": [
+          "3506725"
+        ]
+      },
+      {
+        "claim": "Device profile shared with 30 other cards from different customers — possible fraud ring.",
+        "source": "graph",
+        "ref": "query:device_neighbors",
+        "entity_ids": [
+          "15876",
+          "22830",
+          "10546",
+          "11486",
+          "14670"
+        ]
+      },
+      {
+        "claim": "This device profile appears in 20 closed fraud cases: ['CC-0031', 'CC-0290', 'CC-1056'].",
+        "source": "graph",
+        "ref": "query:cases_by_device",
+        "entity_ids": [
+          "CC-0031",
+          "CC-0290",
+          "CC-1056"
+        ]
+      },
+      {
+        "claim": "Customer has 1 prior cleared alerts — previous investigations found no fraud.",
+        "source": "graph",
+        "ref": "query:similar_closed_cases",
+        "entity_ids": [
+          "CC-0873"
+        ]
+      },
+      {
+        "claim": "Transaction amount $1000.03 is 6.4x the customer's average ($156.80).",
+        "source": "graph",
+        "ref": "query:account_behavior_profile",
+        "entity_ids": [
+          "3506725"
+        ]
+      },
+      {
+        "claim": "The flagged transaction was done online on a device marked 'New' for this customer, matching card-not-present-new-device criteria.",
+        "source": "graph",
+        "ref": "transaction 3506725, id_15=New, channel=online",
+        "entity_ids": [
+          "3506725",
+          "C10434-K1"
+        ]
+      },
+      {
+        "claim": "The same device is shared across 30 different cards and has three prior confirmed‐fraud cases, indicating a compromised device.",
+        "source": "graph",
+        "ref": "shared device list + closed cases CC-0031, CC-0290, CC-1056",
+        "entity_ids": [
+          "C10434-K1",
+          "15876",
+          "22830",
+          "10546",
+          "11486",
+          "14670"
+        ]
+      },
+      {
+        "claim": "Transaction amount $1000.03 is the highest ever for the customer, far above their $156.80 average, suggesting anomalous spend.",
+        "source": "graph",
+        "ref": "customer spend profile vs transaction 3506725",
+        "entity_ids": [
+          "3506725",
+          "C10434-K1"
+        ]
+      },
+      {
+        "claim": "Risk model assigned a very high score of 0.9, providing additional though not decisive signal.",
+        "source": "graph",
+        "ref": "risk_score trigger",
+        "entity_ids": [
+          "3506725"
+        ]
+      },
+      {
+        "claim": "Transaction region is familiar, which mildly offsets risk but does not explain new risky device usage.",
+        "source": "graph",
+        "ref": "region analysis addr1=469.0",
+        "entity_ids": [
+          "3506725"
+        ]
+      }
+    ],
+    "similar_prior_cases": [
+      "CC-0873"
+    ],
+    "summary": "An online $1,000 transaction (id 3506725) was executed from a device never before used by the cardholder but already linked to numerous other cards, three of which were confirmed fraudulent. The spend is the customer’s all-time high and well above normal behaviour. While the geographic region is familiar, the shared-device compromise signal and new-device CNP pattern make fraud highly probable. I classify the activity as card_not_present_new_device fraud with roughly 82 % likelihood and recommend immediate protective actions per R6.",
+    "written_to_graph": true,
+    "graph_case_id": "HHG-010"
+  },
+  "evidence_requests": [
+    {
+      "type": "customer_validation",
+      "asked_after_step": 3,
+      "assumed_response": "Customer confirms they did not make this transaction and have not shared their card details."
+    }
+  ],
+  "next_best_actions": {
+    "initial": [
+      {
+        "action": "STEP_UP_AUTH",
+        "route": "auto",
+        "reason": "R1: probability 0.82 — step-up authentication before further activity"
+      },
+      {
+        "action": "MONITOR_CARD",
+        "route": "auto",
+        "reason": "Monitor card activity"
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "R3a: probability >= 0.30"
+      },
+      {
+        "action": "MONITOR_CONNECTED_CARDS",
+        "route": "auto",
+        "reason": "R6: shared device profile — monitor connected cards"
+      }
+    ],
+    "final": [
+      {
+        "action": "BLOCK_CARD",
+        "route": "L1",
+        "reason": "R2: customer denied transaction, block and reissue card"
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "R2: customer denial — open fraud case"
+      },
+      {
+        "action": "FILE_REPORT",
+        "route": "L2",
+        "reason": "R2: exposure $1000.03 > $1,000"
+      },
+      {
+        "action": "MONITOR_CONNECTED_CARDS",
+        "route": "auto",
+        "reason": "R6: shared device/region — monitor connected cards"
+      }
+    ],
+    "what_changed": "Added: BLOCK_CARD, FILE_REPORT Removed: MONITOR_CARD, STEP_UP_AUTH Customer denial raised probability to 0.95 and confirmed the block."
+  },
+  "sar": {
+    "file": true,
+    "reason": "R2/R6: fraud confirmed or strongly suspected with exposure $1000.03. Shared device links to additional compromised cards. Policy threshold for regulatory filing met.",
+    "narrative": "**Suspicious Activity Report (SAR) Narrative for Case ID: HHG-010**\n\nOn August 21, 2016, and December 2, 2016, a series of suspicious online transactions totaling $1,000.03 were reported under case ID: HHG-010, involving subjects ['12925', '14670', 'C10434', 'C10434-K1', '17503', '22830', '11486', '15876', '10546', '17736', 'device:Windows', '22900']. A particularly concerning transaction (ID 3506725) of $1,000 was executed from a device never before associated with the cardholder, classified under the pattern \"card_not_present_new_device.\" Despite the geographic location being familiar to the cardholder, the transaction aligns with a high-risk profile, indicative of a \"new or stolen device\" use, previously linked to 30 other cards, implicating potential fraud-ring activity. This device’s involvement in 20 prior confirmed fraud cases, including ['CC-0031', 'CC-0290', 'CC-1056'], reinforces the suspicion.\n\nThe risk score assigned by the bank's model is 0.90, strongly suggesting a need for further investigation, despite the customer's prior history of one cleared alert. The anomalous transaction exceeds the customer's historical spending patterns, triggering concerns. Given the 82% likelihood of fraud, this case is classified as a \"card_not_present_new_device\" high-risk activity, warranting immediate protective measures in accordance with protocol R6.\n\nActions are recommended to prevent additional unauthorized transactions and to identify potential systemic vulnerabilities connected to the shared device use.",
+    "subjects": [
+      "12925",
+      "14670",
+      "C10434",
+      "C10434-K1",
+      "17503",
+      "22830",
+      "11486",
+      "15876",
+      "10546",
+      "17736",
+      "device:Windows",
+      "22900"
+    ],
+    "total_amount_usd": 1000.03,
+    "activity_dates": [
+      "2016-08-21",
+      "2016-12-02"
+    ]
+  },
+  "stop_reason": "Verification response received — verdict settled",
+  "tool_calls": 12,
+  "tokens": 3797,
+  "latency_s": 30.5
+}

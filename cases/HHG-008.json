@@ -1,0 +1,130 @@
+{
+  "case_id": "HHG-008",
+  "case": {
+    "status": "closed_fraud",
+    "verdict": "fraud",
+    "fraud_probability": 0.9,
+    "pattern": "card_not_present_new_device",
+    "pattern_description": "",
+    "affected_txn_ids": [
+      "3558054"
+    ],
+    "first_suspicious_txn_id": "3558054",
+    "connected_card_ids": [],
+    "connected_device_profiles": [],
+    "exposure_usd": 55.68,
+    "evidence": [
+      {
+        "claim": "Customer explicitly disputed this transaction, stating they did not make it.",
+        "source": "customer",
+        "ref": "trigger:customer_report",
+        "entity_ids": [
+          "3558054"
+        ]
+      },
+      {
+        "claim": "Customer/card has 7 prior confirmed fraud cases: ['CC-5010', 'CC-4485', 'CC-4163'].",
+        "source": "graph",
+        "ref": "query:similar_closed_cases",
+        "entity_ids": [
+          "CC-5010",
+          "CC-4485",
+          "CC-4163"
+        ]
+      },
+      {
+        "claim": "Cardholder reported transaction 3558054 as unrecognized.",
+        "source": "customer",
+        "ref": "customer_report trigger",
+        "entity_ids": [
+          "3558054",
+          "C13171",
+          "C13171-K2"
+        ]
+      },
+      {
+        "claim": "Transaction 3558054 was an online card-not-present purchase, typical of CNP fraud.",
+        "source": "graph",
+        "ref": "flagged transaction record",
+        "entity_ids": [
+          "3558054",
+          "C13171-K2"
+        ]
+      },
+      {
+        "claim": "In the prior 48 h there were multiple online transactions from devices flagged id_15='New', indicating new device usage inconsistent with historic profile.",
+        "source": "graph",
+        "ref": "transaction window",
+        "entity_ids": [
+          "C13171-K2"
+        ]
+      },
+      {
+        "claim": "The same card has four prior confirmed fraud cases with the card_not_present_new_device pattern.",
+        "source": "document",
+        "ref": "similar prior cases CC-5010, CC-4485, CC-4163, CC-3928",
+        "entity_ids": [
+          "C13171-K2"
+        ]
+      },
+      {
+        "claim": "Burst of 9+ transactions in 24 h with varying devices and small-to-medium amounts signals unauthorized testing/spending spree.",
+        "source": "graph",
+        "ref": "transaction window timestamps",
+        "entity_ids": [
+          "C13171-K2"
+        ]
+      }
+    ],
+    "similar_prior_cases": [
+      "CC-5010",
+      "CC-4819",
+      "CC-4485",
+      "CC-4163",
+      "CC-3928"
+    ],
+    "summary": "The customer denies the flagged online purchase 3558054. Over the same 48-hour period the card was used exclusively online from several 'New' devices, a deviation from normal behavior and matching prior confirmed CNP-new-device fraud episodes on this card. Given the customer denial, repeated historical compromises, and the characteristic pattern of online spend from unfamiliar devices, it is highly probable the card credentials were again compromised. Recommend blocking the card and opening a fraud case.",
+    "written_to_graph": true,
+    "graph_case_id": "HHG-008"
+  },
+  "evidence_requests": [],
+  "next_best_actions": {
+    "initial": [
+      {
+        "action": "BLOCK_CARD",
+        "route": "L1",
+        "reason": "R2: customer disputed, fraud probability high"
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "R2: customer dispute warrants a case"
+      }
+    ],
+    "final": [
+      {
+        "action": "BLOCK_CARD",
+        "route": "L1",
+        "reason": "R2/R5: fraud probability 0.90 — block card"
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "R3a"
+      }
+    ],
+    "what_changed": "nothing"
+  },
+  "sar": {
+    "file": false,
+    "reason": "No SAR required: exposure $55.68 does not exceed $1,000 and no shared device.",
+    "narrative": "",
+    "subjects": [],
+    "total_amount_usd": 0,
+    "activity_dates": []
+  },
+  "stop_reason": "Fraud probability >= 0.85 with 2+ independent evidence pieces",
+  "tool_calls": 9,
+  "tokens": 3112,
+  "latency_s": 8.2
+}

@@ -1,0 +1,140 @@
+{
+  "case_id": "HHG-002",
+  "case": {
+    "status": "open",
+    "verdict": "uncertain",
+    "fraud_probability": 0.45,
+    "pattern": "none",
+    "pattern_description": "",
+    "affected_txn_ids": [
+      "3478782"
+    ],
+    "first_suspicious_txn_id": "3478782",
+    "connected_card_ids": [],
+    "connected_device_profiles": [],
+    "exposure_usd": 292.36,
+    "evidence": [
+      {
+        "claim": "Bank model risk score: 0.79. This is a signal for review, not a verdict.",
+        "source": "graph",
+        "ref": "field:risk_score",
+        "entity_ids": [
+          "3478782"
+        ]
+      },
+      {
+        "claim": "Customer/card has 1 prior confirmed fraud cases: ['CC-4160'].",
+        "source": "graph",
+        "ref": "query:similar_closed_cases",
+        "entity_ids": [
+          "CC-4160"
+        ]
+      },
+      {
+        "claim": "Transaction amount $292.36 is 5.7x the customer's average ($51.54).",
+        "source": "graph",
+        "ref": "query:account_behavior_profile",
+        "entity_ids": [
+          "3478782"
+        ]
+      },
+      {
+        "claim": "Only a single transaction appears in the 48-hour window, so no burst pattern consistent with card_not_present_fraud.",
+        "source": "graph",
+        "ref": "TRANSACTION WINDOW",
+        "entity_ids": [
+          "3478782"
+        ]
+      },
+      {
+        "claim": "Channel is online, which matches the customer's historical usage (100% online), so behaviour is not out of profile.",
+        "source": "graph",
+        "ref": "CUSTOMER PROFILE",
+        "entity_ids": [
+          "C11891"
+        ]
+      },
+      {
+        "claim": "Email domain hotmail.com is already known for the customer and therefore not a new identity signal.",
+        "source": "graph",
+        "ref": "FLAGGED TRANSACTION",
+        "entity_ids": [
+          "C11891"
+        ]
+      },
+      {
+        "claim": "Risk score is high (0.79) but there are zero match-flag mismatches and no new device indicator (id_15=None).",
+        "source": "graph",
+        "ref": "FLAGGED TRANSACTION",
+        "entity_ids": [
+          "3478782"
+        ]
+      },
+      {
+        "claim": "Card had a prior confirmed fraud incident two months ago, raising latent risk but not conclusive for this event.",
+        "source": "document",
+        "ref": "SIMILAR PRIOR CASES CC-4160",
+        "entity_ids": [
+          "C11891-K1"
+        ]
+      }
+    ],
+    "similar_prior_cases": [
+      "CC-4160"
+    ],
+    "summary": "The alert concerns a single $292.36 online purchase that, while the customer\u2019s largest to date, still fits their exclusive online spending pattern. There is no burst of transactions, no new device or email, and no mismatched identity flags, so none of the defined fraud patterns cleanly apply. A prior fraud case on this card raises some residual concern, but evidence for current compromise is weak. Overall likelihood of fraud is moderate (\u224845%), so verification with the customer would be prudent before any block.",
+    "written_to_graph": true,
+    "graph_case_id": "HHG-002"
+  },
+  "evidence_requests": [
+    {
+      "type": "customer_validation",
+      "asked_after_step": 3,
+      "assumed_response": "Customer did not respond within 24 hours."
+    }
+  ],
+  "next_best_actions": {
+    "initial": [
+      {
+        "action": "VERIFY_WITH_CUSTOMER",
+        "route": "auto",
+        "reason": "R1: fraud probability 0.45 is below 0.70 on single signal \u2014 verify before any block"
+      },
+      {
+        "action": "MONITOR_CARD",
+        "route": "auto",
+        "reason": "R1: card monitored while awaiting response"
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "R3a: probability >= 0.30 warrants opening a case"
+      }
+    ],
+    "final": [
+      {
+        "action": "MONITOR_CARD",
+        "route": "auto",
+        "reason": "R4: no reply in 24 hours \u2014 monitoring"
+      },
+      {
+        "action": "DECLINE_TRANSACTION",
+        "route": "L1",
+        "reason": "R4: no reply \u2014 decline pending authorizations"
+      }
+    ],
+    "what_changed": "Added: DECLINE_TRANSACTION Removed: CREATE_CASE, VERIFY_WITH_CUSTOMER"
+  },
+  "sar": {
+    "file": false,
+    "reason": "No SAR required: fraud probability 0.45 does not meet threshold.",
+    "narrative": "",
+    "subjects": [],
+    "total_amount_usd": 0,
+    "activity_dates": []
+  },
+  "stop_reason": "No customer reply within 24h; monitoring applied, escalated if exposed.",
+  "tool_calls": 9,
+  "tokens": 2157,
+  "latency_s": 8.1
+}

@@ -1,0 +1,137 @@
+{
+  "case_id": "HHG-007",
+  "case": {
+    "status": "closed_legitimate",
+    "verdict": "legitimate",
+    "fraud_probability": 0.05,
+    "pattern": "none",
+    "pattern_description": "",
+    "affected_txn_ids": [],
+    "first_suspicious_txn_id": "",
+    "connected_card_ids": [],
+    "connected_device_profiles": [],
+    "exposure_usd": 0.0,
+    "evidence": [
+      {
+        "claim": "Bank model risk score: 0.87. This is a signal for review, not a verdict.",
+        "source": "graph",
+        "ref": "field:risk_score",
+        "entity_ids": [
+          "3514948"
+        ]
+      },
+      {
+        "claim": "3 match flag mismatches detected: ['M6', 'M7', 'M8']. These can indicate identity fraud.",
+        "source": "graph",
+        "ref": "query:match_flags",
+        "entity_ids": [
+          "3514948"
+        ]
+      },
+      {
+        "claim": "Customer/card has 8 prior confirmed fraud cases: ['CC-5521', 'CC-5092', 'CC-4787'].",
+        "source": "graph",
+        "ref": "query:similar_closed_cases",
+        "entity_ids": [
+          "CC-5521",
+          "CC-5092",
+          "CC-4787"
+        ]
+      },
+      {
+        "claim": "Region 264.0 has 2,222 historical transactions, showing it is a habitual location for this customer and not out-of-region activity.",
+        "source": "graph",
+        "ref": "REGION ANALYSIS",
+        "entity_ids": [
+          "addr1:264.0"
+        ]
+      },
+      {
+        "claim": "Flagged transaction 3514948 for $111.92 is close to the customer\u2019s historical average spend of $124.70, indicating normal spend behaviour.",
+        "source": "graph",
+        "ref": "FLAGGED TRANSACTION & CUSTOMER PROFILE",
+        "entity_ids": [
+          "3514948"
+        ]
+      },
+      {
+        "claim": "All transactions in the 48-hour window are in-person channel purchases; there is no online or new-device activity to match known CNP or account-takeover patterns.",
+        "source": "graph",
+        "ref": "TRANSACTION WINDOW",
+        "entity_ids": [
+          "3514948"
+        ]
+      },
+      {
+        "claim": "The only anomaly is three match-flag mismatches (M6, M7, M8) without additional corroborating risk signals.",
+        "source": "graph",
+        "ref": "FLAGGED TRANSACTION",
+        "entity_ids": [
+          "3514948"
+        ]
+      },
+      {
+        "claim": "No sequence of sub-$10 tests, no new region, and no mixed-channel anomalies are present, so none of the documented fraud patterns apply.",
+        "source": "graph",
+        "ref": "Pattern checklist",
+        "entity_ids": []
+      }
+    ],
+    "similar_prior_cases": [
+      "CC-5521",
+      "CC-5092",
+      "CC-4787",
+      "CC-4597",
+      "CC-4455"
+    ],
+    "summary": "The flagged in-person purchase occurs in a familiar region and for an amount consistent with the customer\u2019s normal spending. Aside from three isolated match-flag mismatches, there are no corroborating fraud indicators or pattern fits. Given the single weak signal and normal behavioural context, the likelihood of fraud is low. Recommend verifying with the customer rather than blocking, per policy R1.",
+    "written_to_graph": true,
+    "graph_case_id": "HHG-007"
+  },
+  "evidence_requests": [
+    {
+      "type": "customer_validation",
+      "asked_after_step": 3,
+      "assumed_response": "Customer confirms they made this transaction."
+    }
+  ],
+  "next_best_actions": {
+    "initial": [
+      {
+        "action": "VERIFY_WITH_CUSTOMER",
+        "route": "auto",
+        "reason": "R1: fraud probability 0.32 is below 0.70 on single signal \u2014 verify before any block"
+      },
+      {
+        "action": "MONITOR_CARD",
+        "route": "auto",
+        "reason": "R1: card monitored while awaiting response"
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "R3a: probability >= 0.30 warrants opening a case"
+      }
+    ],
+    "final": [
+      {
+        "action": "CLOSE_NO_FRAUD",
+        "route": "auto",
+        "reason": "R3: customer confirmed the transaction"
+      }
+    ],
+    "what_changed": "Added: CLOSE_NO_FRAUD Removed: CREATE_CASE, MONITOR_CARD, VERIFY_WITH_CUSTOMER Customer confirmation cleared the alert."
+  },
+  "sar": {
+    "file": false,
+    "reason": "No SAR required: fraud probability 0.05 does not meet threshold.",
+    "narrative": "",
+    "subjects": [],
+    "total_amount_usd": 0,
+    "activity_dates": []
+  },
+  "stop_reason": "Verification response received \u2014 verdict settled",
+  "tool_calls": 10,
+  "tokens": 3615,
+  "latency_s": 21.0
+}

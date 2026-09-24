@@ -1,0 +1,220 @@
+{
+  "case_id": "HHG-015",
+  "case": {
+    "status": "closed_fraud",
+    "verdict": "fraud",
+    "fraud_probability": 0.95,
+    "pattern": "card_not_present_new_device",
+    "pattern_description": "",
+    "affected_txn_ids": [
+      "3464869"
+    ],
+    "first_suspicious_txn_id": "3464869",
+    "connected_card_ids": [
+      "14313",
+      "14595",
+      "21415",
+      "12655",
+      "17503",
+      "11978",
+      "19507",
+      "12382",
+      "21568"
+    ],
+    "connected_device_profiles": [
+      "Trident/7.0 | desktop | Windows 8.1 | ie 11.0 for desktop"
+    ],
+    "exposure_usd": 599.94,
+    "evidence": [
+      {
+        "claim": "Bank model risk score: 0.77. This is a signal for review, not a verdict.",
+        "source": "graph",
+        "ref": "field:risk_score",
+        "entity_ids": [
+          "3464869"
+        ]
+      },
+      {
+        "claim": "Device marked as 'New' for this account (id_15=New), consistent with a new or stolen device being used.",
+        "source": "graph",
+        "ref": "query:identity.id_15",
+        "entity_ids": [
+          "3464869"
+        ]
+      },
+      {
+        "claim": "Device profile shared with 30 other cards from different customers — possible fraud ring.",
+        "source": "graph",
+        "ref": "query:device_neighbors",
+        "entity_ids": [
+          "17503",
+          "21415",
+          "14313",
+          "21568",
+          "14595"
+        ]
+      },
+      {
+        "claim": "This device profile appears in 20 closed fraud cases: ['CC-0570', 'CC-0779', 'CC-1017'].",
+        "source": "graph",
+        "ref": "query:cases_by_device",
+        "entity_ids": [
+          "CC-0570",
+          "CC-0779",
+          "CC-1017"
+        ]
+      },
+      {
+        "claim": "Customer/card has 2 prior confirmed fraud cases: ['CC-3886', 'CC-0615'].",
+        "source": "graph",
+        "ref": "query:similar_closed_cases",
+        "entity_ids": [
+          "CC-3886",
+          "CC-0615"
+        ]
+      },
+      {
+        "claim": "Transaction amount $599.94 is 4.3x the customer's average ($139.39).",
+        "source": "graph",
+        "ref": "query:account_behavior_profile",
+        "entity_ids": [
+          "3464869"
+        ]
+      },
+      {
+        "claim": "Flagged transaction 3464869 is an online purchase executed from a device marked id_15='New'.",
+        "source": "graph",
+        "ref": "transaction 3464869 fields",
+        "entity_ids": [
+          "3464869"
+        ]
+      },
+      {
+        "claim": "The combination of online channel plus 'New' device matches the bank's card_not_present_new_device fraud pattern definition.",
+        "source": "graph",
+        "ref": "pattern rules vs txn 3464869",
+        "entity_ids": [
+          "3464869"
+        ]
+      },
+      {
+        "claim": "The same device is shared with at least 30 other cards, five of which are listed and are linked to prior confirmed fraud cases.",
+        "source": "graph",
+        "ref": "Device sharing section",
+        "entity_ids": [
+          "17503",
+          "21415",
+          "14313",
+          "21568",
+          "14595"
+        ]
+      },
+      {
+        "claim": "Customer and card have two prior confirmed card_not_present_new_device fraud incidents (CC-3886, CC-0615), indicating recurring compromise.",
+        "source": "document",
+        "ref": "Similar prior cases memory",
+        "entity_ids": [
+          "C03042-K1"
+        ]
+      },
+      {
+        "claim": "Risk score of 0.77 is above the 0.70 strong-signal threshold, reinforcing concern.",
+        "source": "graph",
+        "ref": "alert trigger",
+        "entity_ids": [
+          "3464869"
+        ]
+      }
+    ],
+    "similar_prior_cases": [
+      "CC-3886",
+      "CC-1313",
+      "CC-0615"
+    ],
+    "summary": "Transaction 3464869 is an online purchase from a brand-new device for this card, fitting the card_not_present_new_device pattern. The device is simultaneously used by multiple other cards tied to confirmed fraud, and this customer’s card has a history of identical compromises. Given the strong signal (risk 0.77) and corroborating device-sharing evidence, the likelihood that this transaction is unauthorized is high. Recommend blocking the card, filing a report, and monitoring the connected cards per R6.",
+    "written_to_graph": true,
+    "graph_case_id": "HHG-015"
+  },
+  "evidence_requests": [
+    {
+      "type": "customer_validation",
+      "asked_after_step": 3,
+      "assumed_response": "Customer confirms they did not make this transaction and have not shared their card details."
+    }
+  ],
+  "next_best_actions": {
+    "initial": [
+      {
+        "action": "STEP_UP_AUTH",
+        "route": "auto",
+        "reason": "R1: probability 0.82 — step-up authentication before further activity"
+      },
+      {
+        "action": "MONITOR_CARD",
+        "route": "auto",
+        "reason": "Monitor card activity"
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "R3a: probability >= 0.30"
+      },
+      {
+        "action": "MONITOR_CONNECTED_CARDS",
+        "route": "auto",
+        "reason": "R6: shared device profile — monitor connected cards"
+      }
+    ],
+    "final": [
+      {
+        "action": "BLOCK_CARD",
+        "route": "L1",
+        "reason": "R2: customer denied transaction, block and reissue card"
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "R2: customer denial — open fraud case"
+      },
+      {
+        "action": "FILE_REPORT",
+        "route": "L2",
+        "reason": "R2: shared device links to another compromised card"
+      },
+      {
+        "action": "MONITOR_CONNECTED_CARDS",
+        "route": "auto",
+        "reason": "R6: shared device/region — monitor connected cards"
+      }
+    ],
+    "what_changed": "Added: BLOCK_CARD, FILE_REPORT Removed: MONITOR_CARD, STEP_UP_AUTH Customer denial raised probability to 0.95 and confirmed the block."
+  },
+  "sar": {
+    "file": true,
+    "reason": "R2/R6: fraud confirmed or strongly suspected with exposure $599.94. Shared device links to additional compromised cards. Policy threshold for regulatory filing met.",
+    "narrative": "A review of transaction 3464869 revealed suspicious activity associated with a new device flagged as 'New' for the account in question. This device, identified as id_15, was used to make an online purchase totaling $599.94, a significant increase compared to the customer's average transaction amount of $139.39. The risk score associated with this transaction is high at 0.77, indicating potential fraudulent activity. This new device shares a profile with 30 other cards belonging to different customers, suggesting possible involvement in a fraud ring.\n\nFurthermore, this device profile has been linked to 20 previously closed fraud cases, such as 'CC-0570', 'CC-0779', and 'CC-1017'. The customer in question also has a history of fraud, with their card involved in two confirmed cases, 'CC-3886' and 'CC-0615'. The transaction method—online and via a new device—aligns with the established card_not_present_new_device fraud pattern. These factors collectively raise concerns about the authenticity of this transaction.\n\nGiven the significant deviation from normal transaction behavior, the shared device usage across multiple fraudulent cases, and the customer's prior fraud history, there is a high probability that this transaction is unauthorized. It is recommended to block the card involved, file a detailed report on the incident, and closely monitor any linked cards to mitigate further risk.",
+    "subjects": [
+      "C03042-K1",
+      "14313",
+      "device:Trident/7.0",
+      "14595",
+      "21415",
+      "12655",
+      "17503",
+      "11978",
+      "19507",
+      "12382",
+      "C03042",
+      "21568"
+    ],
+    "total_amount_usd": 599.94,
+    "activity_dates": [
+      "2016-09-08",
+      "2016-11-17"
+    ]
+  },
+  "stop_reason": "Verification response received — verdict settled",
+  "tool_calls": 12,
+  "tokens": 3851,
+  "latency_s": 12.8
+}

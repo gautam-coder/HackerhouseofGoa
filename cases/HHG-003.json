@@ -1,0 +1,149 @@
+{
+  "case_id": "HHG-003",
+  "case": {
+    "status": "closed_fraud",
+    "verdict": "fraud",
+    "fraud_probability": 0.75,
+    "pattern": "none",
+    "pattern_description": "",
+    "affected_txn_ids": [
+      "3530164"
+    ],
+    "first_suspicious_txn_id": "3530164",
+    "connected_card_ids": [],
+    "connected_device_profiles": [],
+    "exposure_usd": 49.0,
+    "evidence": [
+      {
+        "claim": "Customer explicitly disputed this transaction, stating they did not make it.",
+        "source": "customer",
+        "ref": "trigger:customer_report",
+        "entity_ids": [
+          "3530164"
+        ]
+      },
+      {
+        "claim": "3 match flag mismatches detected: ['M5', 'M7', 'M8']. These can indicate identity fraud.",
+        "source": "graph",
+        "ref": "query:match_flags",
+        "entity_ids": [
+          "3530164"
+        ]
+      },
+      {
+        "claim": "Customer/card has 5 prior confirmed fraud cases: ['CC-4957', 'CC-3682', 'CC-3327'].",
+        "source": "graph",
+        "ref": "query:similar_closed_cases",
+        "entity_ids": [
+          "CC-4957",
+          "CC-3682",
+          "CC-3327"
+        ]
+      },
+      {
+        "claim": "Cardholder proactively reported transaction 3530164 as suspicious.",
+        "source": "customer",
+        "ref": "trigger: customer_report",
+        "entity_ids": [
+          "C08623",
+          "3530164"
+        ]
+      },
+      {
+        "claim": "The flagged purchase occurred in a region where the customer has 43 prior transactions, so geolocation is consistent with history.",
+        "source": "graph",
+        "ref": "REGION ANALYSIS",
+        "entity_ids": [
+          "C08623",
+          "3530164"
+        ]
+      },
+      {
+        "claim": "Recent 48-hour window shows nine similar in-person purchases at the same merchant category and region, suggesting possible legitimate shopping activity.",
+        "source": "graph",
+        "ref": "TRANSACTION WINDOW",
+        "entity_ids": [
+          "C08623"
+        ]
+      },
+      {
+        "claim": "Transaction 3530164 shows three identity match mismatches (M5, M7, M8), indicating potential account-takeover or POS misuse.",
+        "source": "graph",
+        "ref": "FLAGGED TRANSACTION",
+        "entity_ids": [
+          "3530164"
+        ]
+      },
+      {
+        "claim": "The same card has a history of confirmed fraud incidents, increasing baseline risk of compromise.",
+        "source": "document",
+        "ref": "SIMILAR PRIOR CASES",
+        "entity_ids": [
+          "C08623",
+          "C08623-K2"
+        ]
+      }
+    ],
+    "similar_prior_cases": [
+      "CC-4957",
+      "CC-3682",
+      "CC-3327",
+      "CC-2935",
+      "CC-2817"
+    ],
+    "summary": "Customer disputes a single in-person $49 purchase that superficially fits the cardholder\u2019s normal region and recent spending pattern, yet the transaction carries three identity mismatches that could signal misuse at the terminal or a renewed compromise. Prior confirmed fraud on this card raises concern, but the contextual behavior over the past 48 h looks routine. Given the conflicting signals\u2014direct customer denial versus contextual normality\u2014I assess a moderate 55 % chance this is fraud and recommend verification with the customer before any block.",
+    "written_to_graph": true,
+    "graph_case_id": "HHG-003"
+  },
+  "evidence_requests": [
+    {
+      "type": "customer_validation",
+      "asked_after_step": 3,
+      "assumed_response": "Customer states they did not make this purchase and still have their card."
+    }
+  ],
+  "next_best_actions": {
+    "initial": [
+      {
+        "action": "VERIFY_WITH_CUSTOMER",
+        "route": "auto",
+        "reason": "R1: dispute received but probability below 0.70, confirm before blocking"
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "R3a: customer dispute warrants a case"
+      },
+      {
+        "action": "MONITOR_CARD",
+        "route": "auto",
+        "reason": "R4: monitoring while waiting for confirmation"
+      }
+    ],
+    "final": [
+      {
+        "action": "BLOCK_CARD",
+        "route": "L1",
+        "reason": "R2: customer denied transaction, block and reissue card"
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "R2: customer denial \u2014 open fraud case"
+      }
+    ],
+    "what_changed": "Added: BLOCK_CARD Removed: MONITOR_CARD, VERIFY_WITH_CUSTOMER Customer denial raised probability to 0.75 and confirmed the block."
+  },
+  "sar": {
+    "file": false,
+    "reason": "No SAR required: exposure $49.00 does not exceed $1,000 and no shared device.",
+    "narrative": "",
+    "subjects": [],
+    "total_amount_usd": 0,
+    "activity_dates": []
+  },
+  "stop_reason": "Verification response received \u2014 verdict settled",
+  "tool_calls": 10,
+  "tokens": 3131,
+  "latency_s": 10.6
+}

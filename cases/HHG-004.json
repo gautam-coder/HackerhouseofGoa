@@ -1,0 +1,134 @@
+{
+  "case_id": "HHG-004",
+  "case": {
+    "status": "closed_fraud",
+    "verdict": "fraud",
+    "fraud_probability": 0.75,
+    "pattern": "card_not_present_new_device",
+    "pattern_description": "",
+    "affected_txn_ids": [
+      "3583227"
+    ],
+    "first_suspicious_txn_id": "3583227",
+    "connected_card_ids": [],
+    "connected_device_profiles": [],
+    "exposure_usd": 128.33,
+    "evidence": [
+      {
+        "claim": "Customer explicitly disputed this transaction, stating they did not make it.",
+        "source": "customer",
+        "ref": "trigger:customer_report",
+        "entity_ids": [
+          "3583227"
+        ]
+      },
+      {
+        "claim": "Device marked as 'New' for this account (id_15=New), consistent with a new or stolen device being used.",
+        "source": "graph",
+        "ref": "query:identity.id_15",
+        "entity_ids": [
+          "3583227"
+        ]
+      },
+      {
+        "claim": "Customer/card has 3 prior confirmed fraud cases: ['CC-3778', 'CC-2121', 'CC-1736'].",
+        "source": "graph",
+        "ref": "query:similar_closed_cases",
+        "entity_ids": [
+          "CC-3778",
+          "CC-2121",
+          "CC-1736"
+        ]
+      },
+      {
+        "claim": "Transaction amount $128.33 is 3.6x the customer's average ($35.76).",
+        "source": "graph",
+        "ref": "query:account_behavior_profile",
+        "entity_ids": [
+          "3583227"
+        ]
+      },
+      {
+        "claim": "Flagged and surrounding transactions are all online with id_15 marked 'New', indicating use on devices not previously seen for this customer.",
+        "source": "graph",
+        "ref": "transaction window",
+        "entity_ids": [
+          "3583227"
+        ]
+      },
+      {
+        "claim": "Customer proactively reported the flagged $128.33 transaction as unrecognized, implying denial of authorization.",
+        "source": "customer",
+        "ref": "customer_report trigger",
+        "entity_ids": [
+          "3583227"
+        ]
+      },
+      {
+        "claim": "Card C08106-K1 has three prior confirmed card-not-present fraud cases in last 4 months, showing repeated compromise of the PAN.",
+        "source": "document",
+        "ref": "similar prior cases CC-3778/2121/1736",
+        "entity_ids": [
+          "C08106-K1"
+        ]
+      },
+      {
+        "claim": "Spend amounts ($92.86, $128.33, $83.87) and rapid succession (8 txns in 48h) diverge from cardholder’s historical average $35.76, consistent with CNP fraud bursts.",
+        "source": "graph",
+        "ref": "customer profile vs 48h window",
+        "entity_ids": [
+          "3583227"
+        ]
+      }
+    ],
+    "similar_prior_cases": [
+      "CC-3778",
+      "CC-2121",
+      "CC-1736",
+      "CC-0696"
+    ],
+    "summary": "The card shows a fresh cluster of eight online purchases coming from multiple brand-new devices, with the key $128.33 charge disputed by the cardholder. This fits the card_not_present_new_device pattern: online channel plus id_15='New' on several attempts. Prior confirmed fraud episodes on the same card suggest the number remains in criminal circulation. Given the customer denial and strong device anomaly evidence, the probability of fraud is high (~75%). Recommend blocking the card and opening a formal fraud case per policy R2.",
+    "written_to_graph": true,
+    "graph_case_id": "HHG-004"
+  },
+  "evidence_requests": [],
+  "next_best_actions": {
+    "initial": [
+      {
+        "action": "BLOCK_CARD",
+        "route": "L1",
+        "reason": "R2: customer disputed, fraud probability high"
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "R2: customer dispute warrants a case"
+      }
+    ],
+    "final": [
+      {
+        "action": "BLOCK_CARD",
+        "route": "L1",
+        "reason": "R2: customer disputed, fraud probability high"
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "R2: customer dispute warrants a case"
+      }
+    ],
+    "what_changed": "No change from initial actions. No evidence was requested so final actions remain identical to initial. Exposure $128.33 below SAR threshold and no shared device, so no FILE_REPORT."
+  },
+  "sar": {
+    "file": false,
+    "reason": "No SAR required: exposure $128.33 does not exceed $1,000 and no shared device.",
+    "narrative": "",
+    "subjects": [],
+    "total_amount_usd": 0,
+    "activity_dates": []
+  },
+  "stop_reason": "Investigation complete. Fraud probability 0.75. Further steps unlikely to change decision.",
+  "tool_calls": 9,
+  "tokens": 2838,
+  "latency_s": 8.7
+}

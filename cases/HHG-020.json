@@ -1,0 +1,219 @@
+{
+  "case_id": "HHG-020",
+  "case": {
+    "status": "closed_fraud",
+    "verdict": "fraud",
+    "fraud_probability": 0.95,
+    "pattern": "undocumented",
+    "pattern_description": "Online purchase from a device fingerprint simultaneously used on 30 unrelated cards, several of which have recent confirmed fraud cases; indicates a shared compromised device/bot farm not covered by standard patterns.",
+    "affected_txn_ids": [
+      "3509359"
+    ],
+    "first_suspicious_txn_id": "3509359",
+    "connected_card_ids": [
+      "17726",
+      "22689",
+      "23367",
+      "21775",
+      "17503",
+      "15058",
+      "20671",
+      "18652",
+      "21463",
+      "21568"
+    ],
+    "connected_device_profiles": [
+      "Trident/7.0 | desktop | Windows 10 | ie 11.0 for desktop"
+    ],
+    "exposure_usd": 125.08,
+    "evidence": [
+      {
+        "claim": "Bank model risk score: 0.52. This is a signal for review, not a verdict.",
+        "source": "graph",
+        "ref": "field:risk_score",
+        "entity_ids": [
+          "3509359"
+        ]
+      },
+      {
+        "claim": "Device marked as 'New' for this account (id_15=New), consistent with a new or stolen device being used.",
+        "source": "graph",
+        "ref": "query:identity.id_15",
+        "entity_ids": [
+          "3509359"
+        ]
+      },
+      {
+        "claim": "Device profile shared with 30 other cards from different customers — possible fraud ring.",
+        "source": "graph",
+        "ref": "query:device_neighbors",
+        "entity_ids": [
+          "21775",
+          "15058",
+          "21568",
+          "21463",
+          "22689"
+        ]
+      },
+      {
+        "claim": "This device profile appears in 20 closed fraud cases: ['CC-0570', 'CC-0779', 'CC-1017'].",
+        "source": "graph",
+        "ref": "query:cases_by_device",
+        "entity_ids": [
+          "CC-0570",
+          "CC-0779",
+          "CC-1017"
+        ]
+      },
+      {
+        "claim": "Customer/card has 2 prior confirmed fraud cases: ['CC-2447', 'CC-2277'].",
+        "source": "graph",
+        "ref": "query:similar_closed_cases",
+        "entity_ids": [
+          "CC-2447",
+          "CC-2277"
+        ]
+      },
+      {
+        "claim": "Flagged transaction was performed online from a device never seen before for this customer (id_15='New').",
+        "source": "graph",
+        "ref": "transaction 3509359 fields",
+        "entity_ids": [
+          "3509359"
+        ]
+      },
+      {
+        "claim": "The same device fingerprint is associated with 30 other cards across multiple customers.",
+        "source": "graph",
+        "ref": "DEVICE SHARED WITH OTHER CARDS section",
+        "entity_ids": [
+          "21775",
+          "15058",
+          "21568",
+          "21463",
+          "22689"
+        ]
+      },
+      {
+        "claim": "At least three closed cases tied to this device are confirmed fraud (account_takeover, card_not_present_new_device, card_not_present_fraud).",
+        "source": "document",
+        "ref": "CLOSED CASES ON SAME DEVICE",
+        "entity_ids": [
+          "CC-0570",
+          "CC-0779",
+          "CC-1017"
+        ]
+      },
+      {
+        "claim": "Customer’s card had two prior confirmed fraud incidents (Aug 2016).",
+        "source": "document",
+        "ref": "SIMILAR PRIOR CASES",
+        "entity_ids": [
+          "CC-2447",
+          "CC-2277"
+        ]
+      },
+      {
+        "claim": "In-person transactions around the same time occur on usual region and channel, suggesting the legitimate cardholder was not using the suspicious online device.",
+        "source": "graph",
+        "ref": "TRANSACTION WINDOW",
+        "entity_ids": [
+          "3509360",
+          "3509361",
+          "3509362",
+          "3509363"
+        ]
+      }
+    ],
+    "similar_prior_cases": [
+      "CC-2447",
+      "CC-2277"
+    ],
+    "summary": "The single online transaction (3509359) came from a brand-new device for the cardholder that is simultaneously linked to 30 other cards, many of which already have confirmed fraud cases. This strong cross-card linkage, combined with the customer’s past fraud history and the absence of any customer-familiar signals for the device, makes it highly likely that the card details were used by a fraudster operating a shared compromised device or bot. No other customer transactions share this device, and recent in-person activity looks normal, reinforcing that only the online purchase is suspect. Overall likelihood of fraud is estimated at 80%.",
+    "written_to_graph": true,
+    "graph_case_id": "HHG-020"
+  },
+  "evidence_requests": [
+    {
+      "type": "customer_validation",
+      "asked_after_step": 3,
+      "assumed_response": "Customer confirms they did not make this transaction and have not shared their card details."
+    }
+  ],
+  "next_best_actions": {
+    "initial": [
+      {
+        "action": "STEP_UP_AUTH",
+        "route": "auto",
+        "reason": "R1: probability 0.80 — step-up authentication before further activity"
+      },
+      {
+        "action": "MONITOR_CARD",
+        "route": "auto",
+        "reason": "Monitor card activity"
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "R3a: probability >= 0.30"
+      },
+      {
+        "action": "MONITOR_CONNECTED_CARDS",
+        "route": "auto",
+        "reason": "R6: shared device profile — monitor connected cards"
+      }
+    ],
+    "final": [
+      {
+        "action": "BLOCK_CARD",
+        "route": "L1",
+        "reason": "R2: customer denied transaction, block and reissue card"
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "R2: customer denial — open fraud case"
+      },
+      {
+        "action": "FILE_REPORT",
+        "route": "L2",
+        "reason": "R2: shared device links to another compromised card"
+      },
+      {
+        "action": "MONITOR_CONNECTED_CARDS",
+        "route": "auto",
+        "reason": "R6: shared device/region — monitor connected cards"
+      }
+    ],
+    "what_changed": "Added: BLOCK_CARD, FILE_REPORT Removed: MONITOR_CARD, STEP_UP_AUTH Customer denial raised probability to 0.95 and confirmed the block."
+  },
+  "sar": {
+    "file": true,
+    "reason": "R2/R6: fraud confirmed or strongly suspected with exposure $125.08. Shared device links to additional compromised cards. Policy threshold for regulatory filing met.",
+    "narrative": "**SAR Narrative for Case ID: HHG-020**\n\nOn November 7, 2016, a suspicious online transaction (ID: 3509359) amounting to $125.08 was flagged involving a bank customer. The transaction was executed via a device identified as \"Trident/7.0,\" newly associated with the customer's account. This device's profile is concerning as it is linked to 30 other distinct cards, many of which have confirmed fraud activities, suggesting the involvement of a fraud ring utilizing a shared compromised device or bot. The absence of familiarity indicators for this device raises further suspicion of unauthorized use. The customer’s card has a history of fraud, linked to two prior confirmed cases, namely CC-2447 and CC-2277.\n\nThe bank's risk model assigned a review-triggering risk score of 0.52, further supporting scrutiny. Importantly, while the online activity was flagged, no other transactions associated with this customer exhibit irregularities, reinforcing that this is an isolated incident likely perpetrated by fraudsters. Additionally, the same device profile has been detected in 20 prior closed fraud cases, such as CC-0570, CC-0779, and CC-1017. This consistent linkage strongly supports the likelihood of systemic fraud. Hence, there is a high probability (estimated at 80%) that this transaction is fraudulent. Immediate measures should be taken to mitigate potential financial loss and further exploitation.",
+    "subjects": [
+      "17726",
+      "C12265",
+      "22689",
+      "23367",
+      "device:Trident/7.0",
+      "21775",
+      "17503",
+      "C12265-K2",
+      "15058",
+      "20671",
+      "18652",
+      "21463",
+      "21568"
+    ],
+    "total_amount_usd": 125.08,
+    "activity_dates": [
+      "2016-11-07",
+      "2016-12-03"
+    ]
+  },
+  "stop_reason": "Verification response received — verdict settled",
+  "tool_calls": 12,
+  "tokens": 4251,
+  "latency_s": 14.8
+}
