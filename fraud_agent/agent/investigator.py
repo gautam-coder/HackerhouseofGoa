@@ -1,7 +1,7 @@
 """
 Core fraud investigation agent.
-LLM: uses Anthropic Claude (ANTHROPIC_API_KEY) if set, else OpenAI (OPENAI_API_KEY).
-TigerGraph: writes cases to TigerGraph when TG_HOST is configured.
+LLM: OpenAI o3 (OPENAI_API_KEY).
+TigerGraph: writes cases to TigerGraph when TG_HOST is configured via MCP.
 Graph evidence: always uses local SQLite (mirrors TigerGraph schema).
 Produces a complete answer JSON per case matching the README spec exactly.
 """
@@ -33,15 +33,15 @@ OPENAI_API_KEY = os.environ.get("OPENAI_API_KEY", "")
 
 
 def _make_llm_client():
-    """Return (client, provider) — prefers Anthropic, falls back to OpenAI."""
-    if ANTHROPIC_API_KEY:
-        import anthropic
-        return anthropic.Anthropic(api_key=ANTHROPIC_API_KEY), "anthropic"
+    """Return (client, provider)."""
     if OPENAI_API_KEY:
         from openai import OpenAI
         return OpenAI(api_key=OPENAI_API_KEY), "openai"
+    if ANTHROPIC_API_KEY:
+        import anthropic
+        return anthropic.Anthropic(api_key=ANTHROPIC_API_KEY), "anthropic"
     raise RuntimeError(
-        "No LLM API key found. Set ANTHROPIC_API_KEY or OPENAI_API_KEY in fraud_agent/.env"
+        "No LLM API key found. Set OPENAI_API_KEY in fraud_agent/.env"
     )
 
 FRAUD_POLICY = """
@@ -86,7 +86,7 @@ class FraudInvestigator:
     def _llm(self, system: str, messages: list[dict], max_tokens: int = 4096) -> str:
         if self.provider == "anthropic":
             response = self.client.messages.create(
-                model="claude-sonnet-4-6",
+                model="claude-opus-4-7",
                 max_tokens=max_tokens,
                 system=system,
                 messages=messages,
@@ -94,7 +94,7 @@ class FraudInvestigator:
             self.tokens += response.usage.input_tokens + response.usage.output_tokens
             return response.content[0].text
         else:
-            # OpenAI — o3 uses max_completion_tokens, not max_tokens
+            # OpenAI o3 uses max_completion_tokens, not max_tokens
             resp = self.client.chat.completions.create(
                 model="o3",
                 max_completion_tokens=max_tokens,

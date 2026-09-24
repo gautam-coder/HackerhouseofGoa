@@ -1,9 +1,0 @@
-{
-  "mcpServers": {
-    "tigergraph": {
-      "type": "http",
-      "url": "http://localhost:8001/mcp",
-      "note": "Start with: bash fraud_agent/start_tg_mcp.sh (requires TG_HOST in .env)"
-    }
-  }
-}

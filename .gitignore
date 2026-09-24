@@ -18,3 +18,5 @@ fraud_agent/data/__pycache__/
 
 # Mac
 .DS_Store
+fraud_agent/.claude/
+.claude/

@@ -25,7 +25,7 @@ if [ -z "$ANTHROPIC_API_KEY" ] && [ -z "$OPENAI_API_KEY" ]; then
     echo "  (copy .env.example → .env and fill in your key)"
     exit 1
 fi
-LLM="${ANTHROPIC_API_KEY:+Anthropic Claude}${OPENAI_API_KEY:+OpenAI GPT-4o}"
+LLM="${OPENAI_API_KEY:+OpenAI o3}"
 echo "✓ LLM: ${LLM}"
 
 # 2. Check TigerGraph

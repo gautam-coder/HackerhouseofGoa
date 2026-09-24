@@ -57,7 +57,7 @@ An agentic fraud investigation system that investigates card fraud cases, mainta
 
 ```bash
 # 1. Install dependencies
-pip3 install anthropic fastapi uvicorn
+pip3 install openai fastapi uvicorn
 
 # 2. Set API key
 export ANTHROPIC_API_KEY=sk-ant-...
@@ -93,7 +93,7 @@ For each of the 20 exam cases, the agent:
 6. **Queries device neighbors** — what other cards shared this device profile?
 7. **Checks match flags** — M1–M9 mismatches signal identity fraud
 8. **Retrieves similar closed cases** from the 5,565 historical cases (case memory)
-9. **Asks Claude** to synthesize all evidence, identify the fraud pattern, and assess probability
+9. **Asks the LLM (OpenAI o3)** to synthesize all evidence, identify the fraud pattern, and assess probability
 10. **Applies the fraud policy** (R1–R10) to generate initial and final actions
 11. **Simulates evidence requests** (customer validation) and updates recommendations
 12. **Generates a SAR** when policy requires regulatory filing
@@ -148,7 +148,7 @@ fraud_agent/
 │   └── fraud.db            # Local graph database (590k transactions)
 ├── agent/
 │   ├── graph_queries.py    # All graph/DB access (TigerGraph-compatible API)
-│   ├── investigator.py     # Core investigation agent (Claude claude-sonnet-4-6)
+│   ├── investigator.py     # Core investigation agent (OpenAI o3)
 │   └── policy.py           # Fraud policy engine (R1-R10)
 ├── cases/                  # Output: 20 JSON answer files
 ├── schema/
