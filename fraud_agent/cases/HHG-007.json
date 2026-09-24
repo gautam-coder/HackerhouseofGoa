@@ -1,11 +1,11 @@
 {
   "case_id": "HHG-007",
   "case": {
-    "status": "open",
+    "status": "closed_uncertain",
     "verdict": "uncertain",
-    "fraud_probability": 0.48,
-    "pattern": "undocumented",
-    "pattern_description": "Card-present spending burst with three match-flag mismatches; does not meet any listed pattern but could indicate use of a lost/stolen physical card.",
+    "fraud_probability": 0.45,
+    "pattern": "none",
+    "pattern_description": "",
     "affected_txn_ids": [
       "3514948"
     ],
@@ -41,43 +41,43 @@
         ]
       },
       {
-        "claim": "Flagged transaction 3514948 carries a very high internal risk score of 0.87.",
+        "claim": "Flagged transaction shows three identity mismatches and high internal risk score 0.87.",
         "source": "graph",
-        "ref": "risk_score feed",
+        "ref": "transaction 3514948",
         "entity_ids": [
           "3514948"
         ]
       },
       {
-        "claim": "Transaction shows three identity/device match mismatches (M6, M7, M8), consistent with possible impersonation or card mis-use.",
+        "claim": "Transaction occurred in a region heavily frequented by the customer (2,222 prior visits), so location is not unusual.",
         "source": "graph",
-        "ref": "match_flags",
+        "ref": "region analysis addr1 264.0",
         "entity_ids": [
           "3514948"
         ]
       },
       {
-        "claim": "Spending occurs in a region long familiar to the customer (2222 prior txns in addr1=264.0), arguing against out-of-region fraud.",
+        "claim": "Amount $111.92 is close to the customer's historical average $124.70 and well below prior maxima, indicating spend behavior is typical.",
         "source": "graph",
-        "ref": "region stats",
+        "ref": "customer profile statistics",
         "entity_ids": [
-          "C09933"
+          "3514948"
         ]
       },
       {
-        "claim": "The $111.92 amount is near the customer’s historical average ($124.70) and well below historical max, so amount alone is not unusual.",
+        "claim": "No card-not-present activity or cross-channel anomalies observed in the recent 48h window; all recent activity is in-person Product W, matching normal usage.",
         "source": "graph",
-        "ref": "customer stats",
+        "ref": "transaction window \u00b148h",
         "entity_ids": [
-          "C09933"
+          "3514948"
         ]
       },
       {
-        "claim": "Card C09933-K2 has five prior confirmed fraud cases in the last two months, indicating elevated compromise history.",
+        "claim": "Although this card has a history of confirmed account-takeover fraud in October, there is no new evidence of the same pattern now.",
         "source": "document",
         "ref": "similar prior cases memory",
         "entity_ids": [
-          "C09933-K2"
+          "3514948"
         ]
       }
     ],
@@ -88,7 +88,7 @@
       "CC-4597",
       "CC-4455"
     ],
-    "summary": "The flagged in-person purchase shows a high risk score and three match-flag mismatches, which could reflect a stolen physical card or identity mismatch. However, the purchase occurred in a region and amount range entirely typical for the cardholder, and the recent 48-hour activity resembles the customer’s normal in-person usage pattern. Given the conflicting signals and the card’s prior fraud history, the evidence is inconclusive. Probability of fraud is estimated at roughly 48%. Escalation for deeper analyst review is recommended due to exposure exceeding $500 if additional linked transactions surface.",
+    "summary": "The only suspicious element is a single in-person purchase with three identity mismatches that triggered a high risk score. Location, channel, and amount all fit the customer\u2019s long-term behavior, and the surrounding 48-hour activity looks routine. Prior fraud incidents are noted but do not, on their own, make the current transaction fraudulent. Overall evidence is mixed, yielding a moderate 45% fraud likelihood. Recommend verifying with the customer before taking restrictive action.",
     "written_to_graph": true,
     "graph_case_id": "HHG-007"
   },
@@ -104,7 +104,7 @@
       {
         "action": "VERIFY_WITH_CUSTOMER",
         "route": "auto",
-        "reason": "R1: fraud probability 0.48 is below 0.70 on single signal — verify before any block"
+        "reason": "R1: fraud probability 0.45 is below 0.70 on single signal \u2014 verify before any block"
       },
       {
         "action": "MONITOR_CARD",
@@ -119,26 +119,21 @@
     ],
     "final": [
       {
-        "action": "ESCALATE_TO_ANALYST",
-        "route": "L1",
-        "reason": "R8: uncertain verdict with conflicting signals — analyst required"
-      },
-      {
         "action": "MONITOR_CARD",
         "route": "auto",
-        "reason": "R8: monitor while case is escalated"
+        "reason": "R4: no reply in 24 hours \u2014 monitoring"
       },
       {
-        "action": "CREATE_CASE",
-        "route": "auto",
-        "reason": "R3a: probability 0.48 — open case for analyst review"
+        "action": "DECLINE_TRANSACTION",
+        "route": "L1",
+        "reason": "R4: no reply \u2014 decline pending authorizations"
       }
     ],
-    "what_changed": "Added: ESCALATE_TO_ANALYST, CREATE_CASE  Removed: DECLINE_TRANSACTION  R8 requires escalation on uncertain verdict with conflicting signals. Declining without analyst review would violate R1 (weak single signal)."
+    "what_changed": "Added: DECLINE_TRANSACTION Removed: CREATE_CASE, VERIFY_WITH_CUSTOMER"
   },
   "sar": {
     "file": false,
-    "reason": "No SAR required: fraud probability 0.48 does not meet threshold.",
+    "reason": "No SAR required: fraud probability 0.45 does not meet threshold.",
     "narrative": "",
     "subjects": [],
     "total_amount_usd": 0,
@@ -146,6 +141,6 @@
   },
   "stop_reason": "No customer reply within 24h; monitoring applied, escalated if exposed.",
   "tool_calls": 10,
-  "tokens": 3568,
-  "latency_s": 13.4
+  "tokens": 3006,
+  "latency_s": 19.9
 }

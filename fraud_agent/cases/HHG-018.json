@@ -111,20 +111,15 @@
       {
         "action": "BLOCK_CARD",
         "route": "L1",
-        "reason": "R2: customer denied transaction, fraud probability 0.82"
+        "reason": "R2: customer disputed, fraud probability high"
       },
       {
         "action": "CREATE_CASE",
         "route": "auto",
-        "reason": "R3a: fraud probability >= 0.70"
-      },
-      {
-        "action": "VERIFY_WITH_CUSTOMER",
-        "route": "auto",
-        "reason": "R4: reissue card after customer contact"
+        "reason": "R2: customer dispute warrants a case"
       }
     ],
-    "what_changed": "Added: BLOCK_CARD  Removed: MONITOR_CARD, ESCALATE_TO_ANALYST  Customer denial at 0.82 probability triggers R2 block. Exposure $39.08 below SAR threshold and no shared device, so no FILE_REPORT."
+    "what_changed": "No change from initial actions. No evidence was requested so final actions remain identical to initial. Exposure $39.08 below SAR threshold and no shared device, so no FILE_REPORT."
   },
   "sar": {
     "file": false,

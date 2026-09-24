@@ -131,7 +131,12 @@
       {
         "action": "FILE_REPORT",
         "route": "L2",
-        "reason": "R2: exposure > $1,000 or shared device"
+        "reason": "R6: shared device with confirmed-fraud history"
+      },
+      {
+        "action": "MONITOR_CONNECTED_CARDS",
+        "route": "auto",
+        "reason": "R6: device shared with 30 cards — monitor all"
       }
     ],
     "final": [
@@ -156,7 +161,7 @@
         "reason": "R6"
       }
     ],
-    "what_changed": "Added: MONITOR_CONNECTED_CARDS"
+    "what_changed": "No change from initial actions. Shared device evidence was present from investigation start; MONITOR_CONNECTED_CARDS and FILE_REPORT were included in initial actions per R6."
   },
   "sar": {
     "file": true,

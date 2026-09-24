@@ -109,20 +109,15 @@
       {
         "action": "BLOCK_CARD",
         "route": "L1",
-        "reason": "R2: customer denied, card_not_present_new_device at 0.75"
+        "reason": "R2: customer disputed, fraud probability high"
       },
       {
         "action": "CREATE_CASE",
         "route": "auto",
-        "reason": "R3a: fraud probability >= 0.70"
-      },
-      {
-        "action": "VERIFY_WITH_CUSTOMER",
-        "route": "auto",
-        "reason": "R4: issue replacement card after customer validation"
+        "reason": "R2: customer dispute warrants a case"
       }
     ],
-    "what_changed": "Added: BLOCK_CARD  Removed: MONITOR_CARD, ESCALATE_TO_ANALYST  Customer denial confirmed new-device CNP fraud. Exposure $128.33 below SAR threshold and no shared device, so no FILE_REPORT."
+    "what_changed": "No change from initial actions. No evidence was requested so final actions remain identical to initial. Exposure $128.33 below SAR threshold and no shared device, so no FILE_REPORT."
   },
   "sar": {
     "file": false,

@@ -39,46 +39,40 @@
         ]
       },
       {
-        "claim": "Region 444.0 has been used 11 prior times by this cardholder, so it is not a new or out-of-region location.",
+        "claim": "Flagged in-person transaction 3514030 occurred in region 444.0 where the customer has 11 prior visits, so it is not out-of-region activity.",
         "source": "graph",
         "ref": "REGION ANALYSIS",
         "entity_ids": [
-          "addr1:444.0",
-          "card:C12382-K1"
+          "3514030"
         ]
       },
       {
-        "claim": "All recent transactions (10 in 48h) are card-present in-person purchases, consistent with the customer’s historical in-person usage (Product W).",
+        "claim": "All ten transactions within the 48-hour window are card-present (Product W) and amounts ($23-$160) sit close to the customer\u2019s $117 average, resembling normal spend rather than testing or burst fraud.",
         "source": "graph",
         "ref": "TRANSACTION WINDOW",
-        "entity_ids": [
-          "card:C12382-K1",
-          "txn:3514030"
-        ]
+        "entity_ids": []
       },
       {
-        "claim": "Purchase amounts $24–$160 lie within the customer’s normal spending range (avg $116.91, max $845.01).",
-        "source": "graph",
-        "ref": "CUSTOMER PROFILE",
-        "entity_ids": [
-          "card:C12382-K1"
-        ]
-      },
-      {
-        "claim": "Only one minor match-flag mismatch (M5) is present, providing a weak fraud signal.",
+        "claim": "Only a single mismatch flag (M5) is present and the machine risk_score is 0.61\u2014moderate but below typical hard-fraud thresholds.",
         "source": "graph",
         "ref": "FLAGGED TRANSACTION",
         "entity_ids": [
-          "txn:3514030"
+          "3514030"
         ]
       },
       {
-        "claim": "Risk score is 0.61 (moderate) with no corroborating fraud pattern; overall evidence insufficient to label fraud.",
+        "claim": "The customer historically transacts across 40 different regions, indicating a travel-heavy profile consistent with the observed spend pattern.",
         "source": "graph",
-        "ref": "risk_score",
+        "ref": "CUSTOMER PROFILE",
         "entity_ids": [
-          "txn:3514030"
+          "C12382"
         ]
+      },
+      {
+        "claim": "No online, new-device, or mixed-channel anomalies are present, so none of the predefined fraud patterns fit.",
+        "source": "graph",
+        "ref": "EVIDENCE SUMMARY",
+        "entity_ids": []
       }
     ],
     "similar_prior_cases": [
@@ -87,7 +81,7 @@
       "CC-1673",
       "CC-1066"
     ],
-    "summary": "The flagged in-person purchase occurred in a region where the customer has transacted 11 times before, and all activity in the 48-hour window follows a normal, card-present shopping pattern with amounts well within historical norms. There is no indication of card-not-present misuse, out-of-region travel, card testing, or account-takeover anomalies. The sole M5 mismatch and moderate risk score constitute a weak, isolated signal. Therefore the probability of fraud is assessed at roughly one-third, and the activity is most likely legitimate.",
+    "summary": "The flagged $77.07 in-person purchase and the surrounding nine transactions form a normal-looking, moderate-value spending cluster in a region the cardholder frequents. Amounts align with historical averages, and no online or new-device activity is involved. With only a single M5 mismatch and a middling risk score, there is insufficient evidence for any known fraud pattern. Overall likelihood of fraud is low (~35%), so the activity is assessed as legitimate but worth a light customer verification per policy R1 if desired.",
     "written_to_graph": true,
     "graph_case_id": "HHG-001"
   },
@@ -103,7 +97,7 @@
       {
         "action": "VERIFY_WITH_CUSTOMER",
         "route": "auto",
-        "reason": "R1: fraud probability 0.35 is below 0.70 on single signal — verify before any block"
+        "reason": "R1: fraud probability 0.35 is below 0.70 on single signal \u2014 verify before any block"
       },
       {
         "action": "MONITOR_CARD",
@@ -133,8 +127,8 @@
     "total_amount_usd": 0,
     "activity_dates": []
   },
-  "stop_reason": "Verification response received — verdict settled",
+  "stop_reason": "Verification response received \u2014 verdict settled",
   "tool_calls": 10,
-  "tokens": 2710,
-  "latency_s": 9.3
+  "tokens": 3110,
+  "latency_s": 20.2
 }
