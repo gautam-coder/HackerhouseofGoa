@@ -173,11 +173,16 @@ export default function Dashboard() {
     };
 
     es.onerror = () => {
-      setLogs((prev) => [...prev, "Stream connection closed."]);
-      setInvestigationDone(true);
+      // onerror fires after a clean done-close too — only show error if not already done
+      setInvestigationDone((already) => {
+        if (!already) {
+          setLogs((prev) => [...prev, "ERROR: Stream disconnected unexpectedly."]);
+        }
+        return true;
+      });
       es.close();
       esRef.current = null;
-      setTimeout(fetchAll, 1500);
+      setTimeout(fetchAll, 1000);
     };
   }
 
