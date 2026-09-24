@@ -1,0 +1,104 @@
+{
+  "case_id": "HHG-009",
+  "case": {
+    "status": "closed_fraud",
+    "verdict": "fraud",
+    "fraud_probability": 0.85,
+    "pattern": "none",
+    "pattern_description": "",
+    "affected_txn_ids": [
+      "3581141"
+    ],
+    "first_suspicious_txn_id": "3581141",
+    "connected_card_ids": [],
+    "connected_device_profiles": [],
+    "exposure_usd": 30.02,
+    "evidence": [
+      {
+        "claim": "Customer explicitly disputed this transaction, stating they did not make it.",
+        "source": "customer",
+        "ref": "trigger:customer_report",
+        "entity_ids": [
+          "3581141"
+        ]
+      },
+      {
+        "claim": "Cardholder contacted bank and denied authorizing transaction 3581141",
+        "source": "customer",
+        "ref": "customer_report",
+        "entity_ids": [
+          "C08299",
+          "3581141"
+        ]
+      },
+      {
+        "claim": "Transaction is card-not-present (online) so physical possession of card not required, increasing fraud feasibility",
+        "source": "graph",
+        "ref": "txn_channel",
+        "entity_ids": [
+          "3581141"
+        ]
+      },
+      {
+        "claim": "No other related transactions detected within ±48h, suggesting isolated fraudulent use rather than normal spending pattern",
+        "source": "graph",
+        "ref": "transaction_window",
+        "entity_ids": [
+          "3581141"
+        ]
+      },
+      {
+        "claim": "Amount and product slightly below customer's average and within used products, giving weak behavioral match and reinforcing need to rely on customer denial",
+        "source": "graph",
+        "ref": "customer_profile",
+        "entity_ids": [
+          "C08299"
+        ]
+      }
+    ],
+    "similar_prior_cases": [],
+    "summary": "The cardholder explicitly reports the $30.02 online purchase (txn 3581141) as unauthorized. Although the transaction occurred in a familiar region and uses a product class the customer has purchased before, the direct denial outweighs weak behavioral indicators. With no additional suspicious activity or exposure above threshold, treat the event as an isolated fraudulent card-not-present charge, block the card, and open a fraud case per policy R2.",
+    "written_to_graph": true,
+    "graph_case_id": "HHG-009"
+  },
+  "evidence_requests": [],
+  "next_best_actions": {
+    "initial": [
+      {
+        "action": "BLOCK_CARD",
+        "route": "L1",
+        "reason": "R2: customer disputed, fraud probability high"
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "R2: customer dispute warrants a case"
+      }
+    ],
+    "final": [
+      {
+        "action": "BLOCK_CARD",
+        "route": "L1",
+        "reason": "R2/R5: fraud probability 0.85 — block card"
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "R3a"
+      }
+    ],
+    "what_changed": "nothing"
+  },
+  "sar": {
+    "file": false,
+    "reason": "No SAR required: exposure $30.02 does not exceed $1,000 and no shared device.",
+    "narrative": "",
+    "subjects": [],
+    "total_amount_usd": 0,
+    "activity_dates": []
+  },
+  "stop_reason": "Fraud probability >= 0.85 with 2+ independent evidence pieces",
+  "tool_calls": 10,
+  "tokens": 2227,
+  "latency_s": 7.1
+}

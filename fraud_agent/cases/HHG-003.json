@@ -1,0 +1,129 @@
+{
+  "case_id": "HHG-003",
+  "case": {
+    "status": "closed_fraud",
+    "verdict": "fraud",
+    "fraud_probability": 0.9,
+    "pattern": "none",
+    "pattern_description": "",
+    "affected_txn_ids": [
+      "3530164"
+    ],
+    "first_suspicious_txn_id": "3530164",
+    "connected_card_ids": [],
+    "connected_device_profiles": [],
+    "exposure_usd": 49.0,
+    "evidence": [
+      {
+        "claim": "Customer explicitly disputed this transaction, stating they did not make it.",
+        "source": "customer",
+        "ref": "trigger:customer_report",
+        "entity_ids": [
+          "3530164"
+        ]
+      },
+      {
+        "claim": "3 match flag mismatches detected: ['M5', 'M7', 'M8']. These can indicate identity fraud.",
+        "source": "graph",
+        "ref": "query:match_flags",
+        "entity_ids": [
+          "3530164"
+        ]
+      },
+      {
+        "claim": "Customer/card has 5 prior confirmed fraud cases: ['CC-4957', 'CC-3682', 'CC-3327'].",
+        "source": "graph",
+        "ref": "query:similar_closed_cases",
+        "entity_ids": [
+          "CC-4957",
+          "CC-3682",
+          "CC-3327"
+        ]
+      },
+      {
+        "claim": "Cardholder reported transaction 3530164 as unrecognized, directly denying authorization.",
+        "source": "customer",
+        "ref": "customer_report trigger",
+        "entity_ids": [
+          "C08623",
+          "3530164"
+        ]
+      },
+      {
+        "claim": "Transaction 3530164 shows three match-flag mismatches (M5, M7, M8) indicating possible swipe fallback or data mismatch.",
+        "source": "graph",
+        "ref": "flagged transaction details",
+        "entity_ids": [
+          "3530164"
+        ]
+      },
+      {
+        "claim": "No historical behavior anomaly (region 330.0 is familiar), so the event does not match known patterned fraud categories.",
+        "source": "graph",
+        "ref": "region analysis & customer profile",
+        "entity_ids": [
+          "C08623",
+          "3530164"
+        ]
+      },
+      {
+        "claim": "Prior confirmed fraud cases on same card suggest the number has been compromised multiple times before.",
+        "source": "document",
+        "ref": "similar prior cases memory",
+        "entity_ids": [
+          "C08623-K2"
+        ]
+      }
+    ],
+    "similar_prior_cases": [
+      "CC-4957",
+      "CC-3682",
+      "CC-3327",
+      "CC-2935",
+      "CC-2817"
+    ],
+    "summary": "The customer directly disputes the in-person $49 transaction (ID 3530164). Despite occurring in a familiar region, the charge shows three data mismatches and follows a history of previous compromises on the same card. There is no clear fit with defined patterns, but the customer denial makes fraud highly likely. Treat as fraud, block card C08623-K2 and open a case per policy R2.",
+    "written_to_graph": true,
+    "graph_case_id": "HHG-003"
+  },
+  "evidence_requests": [],
+  "next_best_actions": {
+    "initial": [
+      {
+        "action": "BLOCK_CARD",
+        "route": "L1",
+        "reason": "R2: customer disputed, fraud probability high"
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "R2: customer dispute warrants a case"
+      }
+    ],
+    "final": [
+      {
+        "action": "BLOCK_CARD",
+        "route": "L1",
+        "reason": "R2/R5: fraud probability 0.90 — block card"
+      },
+      {
+        "action": "CREATE_CASE",
+        "route": "auto",
+        "reason": "R3a"
+      }
+    ],
+    "what_changed": "nothing"
+  },
+  "sar": {
+    "file": false,
+    "reason": "No SAR required: exposure $49.00 does not exceed $1,000 and no shared device.",
+    "narrative": "",
+    "subjects": [],
+    "total_amount_usd": 0,
+    "activity_dates": []
+  },
+  "stop_reason": "Fraud probability >= 0.85 with 2+ independent evidence pieces",
+  "tool_calls": 10,
+  "tokens": 2796,
+  "latency_s": 9.0
+}

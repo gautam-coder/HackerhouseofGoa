@@ -1,0 +1,170 @@
+// ─────────────────────────────────────────────────────────────────────────────
+// TigerGraph Schema — Fraud Investigation Agent
+// Hacker House Goa 2026 · IEEE-CIS Dataset
+// Run in TigerGraph Studio / GSQL shell
+// ─────────────────────────────────────────────────────────────────────────────
+
+// ── Vertex Types ──────────────────────────────────────────────────────────────
+
+CREATE VERTEX Customer (
+    PRIMARY_ID customer_id STRING,
+    n_cards INT DEFAULT 0
+) WITH STATS="OUTDEGREE_BY_EDGETYPE", PRIMARY_ID_AS_ATTRIBUTE="true"
+
+CREATE VERTEX Card (
+    PRIMARY_ID card_id STRING,
+    card1 STRING,
+    card4 STRING,   // network: visa/mastercard/amex/discover
+    card6 STRING    // type: credit/debit
+) WITH STATS="OUTDEGREE_BY_EDGETYPE", PRIMARY_ID_AS_ATTRIBUTE="true"
+
+CREATE VERTEX Transaction (
+    PRIMARY_ID txn_id STRING,
+    ts DATETIME,
+    amount FLOAT,
+    product_cd STRING,
+    channel STRING,    // in_person / online
+    addr1 FLOAT,
+    addr2 FLOAT,
+    risk_score FLOAT,
+    p_emaildomain STRING,
+    c1 FLOAT, c2 FLOAT, c6 FLOAT, c11 FLOAT,
+    d1 FLOAT, d2 FLOAT,
+    m1 STRING, m2 STRING, m3 STRING, m4 STRING, m5 STRING,
+    v1 FLOAT, v2 FLOAT, v3 FLOAT
+) WITH STATS="OUTDEGREE_BY_EDGETYPE", PRIMARY_ID_AS_ATTRIBUTE="true"
+
+CREATE VERTEX DeviceProfile (
+    PRIMARY_ID device_id STRING,
+    device_info STRING,
+    device_type STRING,
+    os_version STRING,
+    browser STRING,
+    screen STRING,
+    proxy_flag STRING,
+    new_device_count INT DEFAULT 0
+) WITH STATS="OUTDEGREE_BY_EDGETYPE", PRIMARY_ID_AS_ATTRIBUTE="true"
+
+CREATE VERTEX EmailDomain (
+    PRIMARY_ID domain STRING
+) WITH STATS="OUTDEGREE_BY_EDGETYPE", PRIMARY_ID_AS_ATTRIBUTE="true"
+
+CREATE VERTEX BillingRegion (
+    PRIMARY_ID region_code FLOAT
+) WITH STATS="OUTDEGREE_BY_EDGETYPE", PRIMARY_ID_AS_ATTRIBUTE="true"
+
+CREATE VERTEX ClosedCase (
+    PRIMARY_ID case_id STRING,
+    customer_id STRING,
+    card_id STRING,
+    opened_at DATETIME,
+    closed_at DATETIME,
+    outcome STRING,    // confirmed_fraud / cleared
+    pattern STRING,
+    exposure_usd FLOAT,
+    n_txns INT,
+    analyst_notes STRING,
+    connected_card_ids STRING,
+    report_filed BOOL DEFAULT FALSE
+) WITH STATS="OUTDEGREE_BY_EDGETYPE", PRIMARY_ID_AS_ATTRIBUTE="true"
+
+CREATE VERTEX InvestigationCase (
+    PRIMARY_ID case_id STRING,
+    customer_id STRING,
+    card_id STRING,
+    status STRING,
+    verdict STRING,
+    fraud_probability FLOAT,
+    pattern STRING,
+    exposure_usd FLOAT,
+    summary STRING,
+    created_at DATETIME
+) WITH STATS="OUTDEGREE_BY_EDGETYPE", PRIMARY_ID_AS_ATTRIBUTE="true"
+
+// ── Edge Types ─────────────────────────────────────────────────────────────────
+
+CREATE DIRECTED EDGE OWNS (FROM Customer, TO Card)
+CREATE DIRECTED EDGE MADE (FROM Card, TO Transaction)
+CREATE DIRECTED EDGE FROM_DEVICE (FROM Transaction, TO DeviceProfile)
+CREATE DIRECTED EDGE PURCHASER_EMAIL (FROM Transaction, TO EmailDomain)
+CREATE DIRECTED EDGE BILLED_IN (FROM Transaction, TO BillingRegion)
+CREATE DIRECTED EDGE NEXT (FROM Transaction, TO Transaction, ts DATETIME)
+CREATE DIRECTED EDGE INVOLVES (FROM ClosedCase, TO Transaction)
+CREATE DIRECTED EDGE ON_CARD (FROM ClosedCase, TO Card)
+CREATE DIRECTED EDGE CONNECTED_TO (FROM ClosedCase, TO Card)
+CREATE DIRECTED EDGE CASE_INVOLVES (FROM InvestigationCase, TO Transaction)
+CREATE DIRECTED EDGE CASE_ON_CARD (FROM InvestigationCase, TO Card)
+CREATE UNDIRECTED EDGE SHARES_DEVICE (FROM Card, TO Card, device_id STRING)
+
+// ── Graph ──────────────────────────────────────────────────────────────────────
+
+CREATE GRAPH FraudGraph (
+    Customer, Card, Transaction, DeviceProfile, EmailDomain,
+    BillingRegion, ClosedCase, InvestigationCase,
+    OWNS, MADE, FROM_DEVICE, PURCHASER_EMAIL, BILLED_IN,
+    NEXT, INVOLVES, ON_CARD, CONNECTED_TO,
+    CASE_INVOLVES, CASE_ON_CARD, SHARES_DEVICE
+)
+
+// ── GSQL Queries ───────────────────────────────────────────────────────────────
+
+USE GRAPH FraudGraph
+
+// Get all transactions for a card in a time window
+CREATE QUERY card_window(VERTEX<Card> card, INT hours) FOR GRAPH FraudGraph {
+    OrAccum<BOOL> @in_window;
+    SumAccum<INT> @count;
+    start = {card};
+    txns = SELECT t FROM start:c -(MADE)-> :t
+           WHERE t.ts >= now() - HOURS(hours)
+           ORDER BY t.ts DESC;
+    PRINT txns;
+}
+
+// Find all cards sharing a device profile
+CREATE QUERY device_neighbors(VERTEX<DeviceProfile> dev) FOR GRAPH FraudGraph {
+    cards = SELECT c FROM dev:d -(FROM_DEVICE<-)- :t -(MADE<-)- :c;
+    PRINT cards;
+}
+
+// Get card history for a customer before a given time
+CREATE QUERY customer_card_history(VERTEX<Customer> cust, DATETIME before_ts, INT limit) FOR GRAPH FraudGraph {
+    SumAccum<INT> @count;
+    txns = SELECT t FROM cust:cu -(OWNS)-> :ca -(MADE)-> :t
+           WHERE t.ts <= before_ts
+           ORDER BY t.ts DESC
+           LIMIT limit;
+    PRINT txns;
+}
+
+// Check if a billing region is new for a customer
+CREATE QUERY region_history(VERTEX<Customer> cust, VERTEX<BillingRegion> region) FOR GRAPH FraudGraph {
+    SumAccum<INT> @in_region;
+    SumAccum<INT> @total;
+    txns = SELECT t FROM cust:cu -(OWNS)-> :ca -(MADE)-> :t
+           ACCUM @@total += 1,
+                 CASE WHEN t.addr1 == region.region_code THEN @@in_region += 1 END;
+    PRINT @@in_region, @@total;
+}
+
+// Retrieve similar closed cases by pattern (GraphRAG memory)
+CREATE QUERY similar_cases_by_pattern(STRING pattern, STRING customer_id, INT limit) FOR GRAPH FraudGraph {
+    cases = SELECT c FROM ClosedCase:c
+            WHERE c.pattern == pattern OR c.customer_id == customer_id
+            ORDER BY c.closed_at DESC
+            LIMIT limit;
+    PRINT cases;
+}
+
+// Write a new investigation case to the graph
+CREATE QUERY write_investigation_case(
+    STRING case_id, STRING customer_id, STRING card_id,
+    STRING status, STRING verdict, FLOAT fraud_probability,
+    STRING pattern, FLOAT exposure_usd, STRING summary
+) FOR GRAPH FraudGraph {
+    INSERT INTO InvestigationCase VALUES (
+        case_id, customer_id, card_id, status, verdict,
+        fraud_probability, pattern, exposure_usd, summary, now()
+    );
+    PRINT "Case written: " + case_id;
+}

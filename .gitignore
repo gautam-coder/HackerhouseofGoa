@@ -1,0 +1,20 @@
+# Large data files — do not commit
+transactions.csv
+identity.csv
+closed_cases_history.csv
+
+# Local secrets
+fraud_agent/.env
+
+# Built artifacts
+fraud_agent/data/fraud.db
+fraud_agent/ui/node_modules/
+fraud_agent/ui/.next/
+fraud_agent/__pycache__/
+fraud_agent/agent/__pycache__/
+fraud_agent/data/__pycache__/
+**/__pycache__/
+*.pyc
+
+# Mac
+.DS_Store
