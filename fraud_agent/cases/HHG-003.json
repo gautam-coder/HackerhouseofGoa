@@ -41,23 +41,33 @@
         ]
       },
       {
-        "claim": "The flagged transaction is in-person (Product W) in region 330.0 where the customer has 43 prior visits, indicating normal geographic behavior.",
+        "claim": "Cardholder proactively reported transaction 3530164 as suspicious.",
+        "source": "customer",
+        "ref": "trigger: customer_report",
+        "entity_ids": [
+          "C08623",
+          "3530164"
+        ]
+      },
+      {
+        "claim": "The flagged purchase occurred in a region where the customer has 43 prior transactions, so geolocation is consistent with history.",
         "source": "graph",
         "ref": "REGION ANALYSIS",
         "entity_ids": [
+          "C08623",
           "3530164"
         ]
       },
       {
-        "claim": "Amount $49.00 is well within the customer\u2019s historical spend profile (avg $128.83, frequent W purchases $30\u2013$250).",
+        "claim": "Recent 48-hour window shows nine similar in-person purchases at the same merchant category and region, suggesting possible legitimate shopping activity.",
         "source": "graph",
-        "ref": "CUSTOMER PROFILE",
+        "ref": "TRANSACTION WINDOW",
         "entity_ids": [
-          "3530164"
+          "C08623"
         ]
       },
       {
-        "claim": "Three match-flag mismatches (M5, M7, M8) suggest some data entry or terminal mismatch but not conclusive fraud.",
+        "claim": "Transaction 3530164 shows three identity match mismatches (M5, M7, M8), indicating potential account-takeover or POS misuse.",
         "source": "graph",
         "ref": "FLAGGED TRANSACTION",
         "entity_ids": [
@@ -65,15 +75,7 @@
         ]
       },
       {
-        "claim": "Trigger came from customer report; we do not yet have confirmation whether the cardholder recognizes the charge.",
-        "source": "customer",
-        "ref": "case trigger",
-        "entity_ids": [
-          "C08623"
-        ]
-      },
-      {
-        "claim": "Customer has prior confirmed fraud episodes on this card, so a recurrence is plausible and risk slightly higher.",
+        "claim": "The same card has a history of confirmed fraud incidents, increasing baseline risk of compromise.",
         "source": "document",
         "ref": "SIMILAR PRIOR CASES",
         "entity_ids": [
@@ -89,7 +91,7 @@
       "CC-2935",
       "CC-2817"
     ],
-    "summary": "The $49 in-person purchase occurred at a familiar location and size that match the cardholder\u2019s historical behavior, and there are no multiple related suspicious transactions. However, the customer proactively reported the charge and the terminal registered three mismatch flags, while this card has a history of prior compromises. These mixed signals yield an intermediate fraud likelihood. Per policy R1 we should verify the transaction with the customer before any blocking action.",
+    "summary": "Customer disputes a single in-person $49 purchase that superficially fits the cardholder\u2019s normal region and recent spending pattern, yet the transaction carries three identity mismatches that could signal misuse at the terminal or a renewed compromise. Prior confirmed fraud on this card raises concern, but the contextual behavior over the past 48 h looks routine. Given the conflicting signals\u2014direct customer denial versus contextual normality\u2014I assess a moderate 55 % chance this is fraud and recommend verification with the customer before any block.",
     "written_to_graph": true,
     "graph_case_id": "HHG-003"
   },
@@ -142,6 +144,6 @@
   },
   "stop_reason": "Verification response received \u2014 verdict settled",
   "tool_calls": 10,
-  "tokens": 2737,
-  "latency_s": 8.8
+  "tokens": 3131,
+  "latency_s": 10.6
 }

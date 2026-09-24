@@ -90,6 +90,7 @@ export default function Dashboard() {
   const [investigationDone, setInvestigationDone] = useState(false);
   const logsEndRef = useRef<HTMLDivElement>(null);
   const esRef = useRef<EventSource | null>(null);
+  const doneRef = useRef(false);
 
   async function fetchAll() {
     try {
@@ -133,6 +134,7 @@ export default function Dashboard() {
     setLogs([]);
     setLiveResult(null);
     setInvestigationDone(false);
+    doneRef.current = false;
 
     try {
       await fetch(`${API}/api/investigate`, {
@@ -162,6 +164,7 @@ export default function Dashboard() {
         } else if (data.type === "error" && data.msg) {
           setLogs((prev) => [...prev, `ERROR: ${data.msg}`]);
         } else if (data.type === "done") {
+          doneRef.current = true;
           setInvestigationDone(true);
           es.close();
           esRef.current = null;
@@ -173,13 +176,9 @@ export default function Dashboard() {
     };
 
     es.onerror = () => {
-      // onerror fires after a clean done-close too — only show error if not already done
-      setInvestigationDone((already) => {
-        if (!already) {
-          setLogs((prev) => [...prev, "ERROR: Stream disconnected unexpectedly."]);
-        }
-        return true;
-      });
+      if (doneRef.current) return; // clean close after done — ignore
+      doneRef.current = true;
+      setInvestigationDone(true);
       es.close();
       esRef.current = null;
       setTimeout(fetchAll, 1000);

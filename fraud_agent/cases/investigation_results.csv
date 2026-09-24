@@ -1,0 +1,21 @@
+case_id,status,verdict,fraud_probability,pattern,exposure_usd,affected_txn_ids,connected_card_count,sar_filed,sar_amount_usd,final_actions,stop_reason,tool_calls,tokens
+HHG-001,closed_legitimate,legitimate,0.05,none,0.0,,0,False,0,CLOSE_NO_FRAUD,Verification response received — verdict settled,10,3110
+HHG-002,closed_uncertain,uncertain,0.65,none,292.36,3478782,0,False,0,MONITOR_CARD|DECLINE_TRANSACTION,"No customer reply within 24h; monitoring applied, escalated if exposed.",9,2140
+HHG-003,closed_fraud,fraud,0.75,none,49.0,3530164,0,False,0,BLOCK_CARD|CREATE_CASE,Verification response received — verdict settled,10,3131
+HHG-004,closed_fraud,fraud,0.75,card_not_present_new_device,128.33,3583227,0,False,0,BLOCK_CARD|CREATE_CASE,Investigation complete. Fraud probability 0.75. Further steps unlikely to change decision.,9,2838
+HHG-005,closed_fraud,fraud,0.95,card_not_present_new_device,100.07,3523199,9,True,100.07,BLOCK_CARD|CREATE_CASE|FILE_REPORT|MONITOR_CONNECTED_CARDS,Verification response received — verdict settled,12,3712
+HHG-006,closed_fraud,fraud,0.9,card_not_present_new_device,482.12,3476682,10,True,482.12,BLOCK_CARD|CREATE_CASE|FILE_REPORT|MONITOR_CONNECTED_CARDS,Fraud probability >= 0.85 with 2+ independent evidence pieces,12,3641
+HHG-007,closed_legitimate,legitimate,0.05,none,0.0,,0,False,0,CLOSE_NO_FRAUD,Verification response received — verdict settled,10,3615
+HHG-008,closed_fraud,fraud,0.9,card_not_present_new_device,55.68,3558054,0,False,0,BLOCK_CARD|CREATE_CASE,Fraud probability >= 0.85 with 2+ independent evidence pieces,9,3112
+HHG-009,closed_fraud,fraud,0.85,none,30.02,3581141,0,False,0,BLOCK_CARD|CREATE_CASE,Fraud probability >= 0.85 with 2+ independent evidence pieces,10,2227
+HHG-010,closed_fraud,fraud,0.95,card_not_present_new_device,1000.03,3506725,9,True,1000.03,BLOCK_CARD|CREATE_CASE|FILE_REPORT|MONITOR_CONNECTED_CARDS,Verification response received — verdict settled,12,3797
+HHG-011,closed_fraud,fraud,0.95,card_not_present_new_device,131.3,3583368,4,True,131.3,BLOCK_CARD|CREATE_CASE|FILE_REPORT|MONITOR_CONNECTED_CARDS,Verification response received — verdict settled,11,4328
+HHG-012,closed_legitimate,legitimate,0.05,none,0.0,,0,False,0,CLOSE_NO_FRAUD,Verification response received — verdict settled,10,2382
+HHG-013,closed_fraud,fraud,0.95,card_not_present_new_device,35.66,3526826,9,True,35.66,BLOCK_CARD|CREATE_CASE|FILE_REPORT|MONITOR_CONNECTED_CARDS,Verification response received — verdict settled,11,3641
+HHG-014,closed_fraud,fraud,0.85,card_not_present_new_device,74.96,3478561,9,True,74.96,BLOCK_CARD|CREATE_CASE|FILE_REPORT|MONITOR_CONNECTED_CARDS,Fraud probability >= 0.85 with 2+ independent evidence pieces,12,3463
+HHG-015,closed_fraud,fraud,0.95,card_not_present_new_device,599.94,3464869,9,True,599.94,BLOCK_CARD|CREATE_CASE|FILE_REPORT|MONITOR_CONNECTED_CARDS,Verification response received — verdict settled,12,3851
+HHG-016,closed_fraud,fraud,0.85,card_not_present_new_device,59.67,3534820,9,True,59.67,BLOCK_CARD|CREATE_CASE|FILE_REPORT|MONITOR_CONNECTED_CARDS,Fraud probability >= 0.85 with 2+ independent evidence pieces,11,3129
+HHG-017,closed_fraud,fraud,0.95,undocumented,100.09,3450629,9,True,100.09,BLOCK_CARD|CREATE_CASE|FILE_REPORT|MONITOR_CONNECTED_CARDS,Verification response received — verdict settled,12,4348
+HHG-018,closed_fraud,fraud,0.82,none,39.08,3491361,0,False,0,BLOCK_CARD|CREATE_CASE,Investigation complete. Fraud probability 0.82. Further steps unlikely to change decision.,10,3019
+HHG-019,closed_fraud,fraud,0.85,card_not_present_new_device,99.92,3503878,10,True,99.92,BLOCK_CARD|CREATE_CASE|FILE_REPORT|MONITOR_CONNECTED_CARDS,Fraud probability >= 0.85 with 2+ independent evidence pieces,12,3694
+HHG-020,closed_fraud,fraud,0.95,undocumented,125.08,3509359,10,True,125.08,BLOCK_CARD|CREATE_CASE|FILE_REPORT|MONITOR_CONNECTED_CARDS,Verification response received — verdict settled,12,4251
