@@ -1,9 +1,9 @@
 {
   "case_id": "HHG-002",
   "case": {
-    "status": "closed_uncertain",
-    "verdict": "uncertain",
-    "fraud_probability": 0.45,
+    "status": "closed_legitimate",
+    "verdict": "legitimate",
+    "fraud_probability": 0.15,
     "pattern": "none",
     "pattern_description": "",
     "affected_txn_ids": [
@@ -12,7 +12,7 @@
     "first_suspicious_txn_id": "3478782",
     "connected_card_ids": [],
     "connected_device_profiles": [],
-    "exposure_usd": 292.36,
+    "exposure_usd": 0.0,
     "evidence": [
       {
         "claim": "Bank model risk score: 0.79. This is a signal for review, not a verdict.",
@@ -23,15 +23,7 @@
         ]
       },
       {
-        "claim": "Customer/card has 1 prior confirmed fraud cases: ['CC-4160'].",
-        "source": "graph",
-        "ref": "query:similar_closed_cases",
-        "entity_ids": [
-          "CC-4160"
-        ]
-      },
-      {
-        "claim": "Transaction amount $292.36 is 5.7x the customer's average ($51.54).",
+        "claim": "Transaction amount $292.36 is 6.2x the customer's average ($47.46) but equals the customer's all-time historical maximum — no spend ceiling was broken.",
         "source": "graph",
         "ref": "query:account_behavior_profile",
         "entity_ids": [
@@ -39,42 +31,50 @@
         ]
       },
       {
-        "claim": "Single online transaction at $292.36 is the only activity in the 48-hour window, so no clear multi-txn fraud pattern is present.",
+        "claim": "All 44 of this customer's transactions are online Product C — channel, product type, and email domain are fully consistent with normal behavior.",
         "source": "graph",
-        "ref": "TRANSACTION WINDOW",
-        "entity_ids": [
-          "3478782"
-        ]
-      },
-      {
-        "claim": "Amount is high for this customer but still within observed historical maximum ($292.36), suggesting possible but not definitive anomaly.",
-        "source": "graph",
-        "ref": "CUSTOMER PROFILE",
+        "ref": "query:customer_channel_history",
         "entity_ids": [
           "C11891"
         ]
       },
       {
-        "claim": "No device or match-flag mismatches were detected on the transaction, reducing typical CNP fraud indicators.",
+        "claim": "Zero match flag mismatches on the flagged transaction (M1-M9 all clean) — no identity or terminal anomalies detected.",
         "source": "graph",
-        "ref": "FLAGGED TRANSACTION",
+        "ref": "query:match_flags txn 3478782",
         "entity_ids": [
           "3478782"
         ]
       },
       {
-        "claim": "Card had a prior confirmed card-not-present fraud episode two months earlier, indicating some residual compromise risk.",
-        "source": "document",
-        "ref": "SIMILAR PRIOR CASES CC-4160",
+        "claim": "No identity fields present (id_01 through id_33 all absent) — no device or browser anomalies to flag.",
+        "source": "graph",
+        "ref": "query:identity txn 3478782",
         "entity_ids": [
-          "C11891-K1"
+          "3478782"
+        ]
+      },
+      {
+        "claim": "Customer resumed normal low-value transactions ($26-$30, risk scores 0.02-0.15) within 3 weeks of the flagged transaction — no disruption in spending pattern consistent with fraud.",
+        "source": "graph",
+        "ref": "transaction window post-flag",
+        "entity_ids": [
+          "C11891"
+        ]
+      },
+      {
+        "claim": "Customer/card has 1 prior confirmed fraud case (CC-4160) — elevated residual risk, but that incident was separate and current transaction shows no matching indicators.",
+        "source": "graph",
+        "ref": "query:similar_closed_cases",
+        "entity_ids": [
+          "CC-4160"
         ]
       }
     ],
     "similar_prior_cases": [
       "CC-4160"
     ],
-    "summary": "The case involves a single high-risk-scored online purchase that matches the customer\u2019s historical maximum spend but does not display a multi-transaction burst or device anomalies characteristic of card-not-present fraud. Prior confirmed fraud on this card adds residual concern, yet current evidence alone is insufficient to assert a new fraud event. Recommend customer verification before any blocking action.",
+    "summary": "The $292.36 online purchase matches this customer's established channel (100% online Product C) and equals their historical spending maximum — no ceiling was broken. Zero match flag mismatches, no identity anomalies, and the customer resumed normal low-risk transactions within weeks. The risk score of 0.79 was triggered solely by the amount spike, which is a documented false-positive pattern for single high-value purchases within a customer's historical range. With no corroborating fraud indicators, this is a legitimate transaction. No action required beyond closing the case.",
     "written_to_graph": true,
     "graph_case_id": "HHG-002"
   },
@@ -82,7 +82,7 @@
     {
       "type": "customer_validation",
       "asked_after_step": 3,
-      "assumed_response": "Customer did not respond within 24 hours."
+      "assumed_response": "Customer confirmed the transaction was made by them."
     }
   ],
   "next_best_actions": {
@@ -90,43 +90,38 @@
       {
         "action": "VERIFY_WITH_CUSTOMER",
         "route": "auto",
-        "reason": "R1: fraud probability 0.45 is below 0.70 on single signal \u2014 verify before any block"
+        "reason": "R1: risk score 0.79 triggers review but probability below 0.70 — verify before any action"
       },
       {
         "action": "MONITOR_CARD",
         "route": "auto",
-        "reason": "R1: card monitored while awaiting response"
+        "reason": "R1: monitor while awaiting customer confirmation"
       },
       {
         "action": "CREATE_CASE",
         "route": "auto",
-        "reason": "R3a: probability >= 0.30 warrants opening a case"
+        "reason": "R3a: risk score above threshold warrants opening a case"
       }
     ],
     "final": [
       {
-        "action": "MONITOR_CARD",
+        "action": "CLOSE_NO_FRAUD",
         "route": "auto",
-        "reason": "R4: no reply in 24 hours \u2014 monitoring"
-      },
-      {
-        "action": "DECLINE_TRANSACTION",
-        "route": "L1",
-        "reason": "R4: no reply \u2014 decline pending authorizations"
+        "reason": "Customer confirmed transaction; no fraud indicators in data — close as legitimate"
       }
     ],
-    "what_changed": "Added: DECLINE_TRANSACTION Removed: CREATE_CASE, VERIFY_WITH_CUSTOMER"
+    "what_changed": "Removed: MONITOR_CARD, CREATE_CASE, VERIFY_WITH_CUSTOMER. Added: CLOSE_NO_FRAUD. Customer confirmed the transaction. Zero match flags, consistent channel/product, normal post-transaction behavior — risk score was a false positive on amount spike."
   },
   "sar": {
     "file": false,
-    "reason": "No SAR required: fraud probability 0.45 does not meet threshold.",
+    "reason": "No SAR required: transaction confirmed legitimate by customer, no fraud pattern identified.",
     "narrative": "",
     "subjects": [],
     "total_amount_usd": 0,
     "activity_dates": []
   },
-  "stop_reason": "No customer reply within 24h; monitoring applied, escalated if exposed.",
+  "stop_reason": "Customer confirmed transaction — closed as legitimate false positive.",
   "tool_calls": 9,
-  "tokens": 2007,
+  "tokens": 2242,
   "latency_s": 6.6
 }
