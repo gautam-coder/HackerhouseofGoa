@@ -348,12 +348,22 @@ export default function Dashboard() {
                           Running
                         </span>
                       ) : c.investigated ? (
-                        <Link
-                          href={`/case/${c.case_id}`}
-                          className="text-cyan-400 hover:text-cyan-300 text-xs font-semibold transition-colors"
-                        >
-                          View →
-                        </Link>
+                        <div className="flex items-center justify-center gap-2">
+                          <Link
+                            href={`/case/${c.case_id}`}
+                            className="text-cyan-400 hover:text-cyan-300 text-xs font-semibold transition-colors"
+                          >
+                            View →
+                          </Link>
+                          <button
+                            onClick={() => triggerInvestigation(c.case_id)}
+                            disabled={liveCase !== null}
+                            className="text-zinc-500 hover:text-violet-400 text-xs transition-colors disabled:opacity-30 cursor-pointer"
+                            title="Re-investigate"
+                          >
+                            ↺
+                          </button>
+                        </div>
                       ) : (
                         <button
                           onClick={() => triggerInvestigation(c.case_id)}
